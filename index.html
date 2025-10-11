@@ -11,9 +11,9 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <nav class="navbar navbar-expand-lg bg-light">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">UniConnect</a>
+            <a class="navbar-brand fw-bold" href="index.html">UniConnect</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
                 aria-label="Toggle navigation">
@@ -22,15 +22,16 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="index.html">Home</a>
+                        <a class="nav-link active" aria-current="page" href="#main-content">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#forum">Link</a>
+                        <a class="nav-link" href="#forum">Forum</a>
                     </li>
                 </ul>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-outline-success" type="button">Login</button>
-                    <button class="btn btn-outline-success" type="button">Register</button>
+                <div class="d-flex gap-2" id="auth-buttons">
+                    <button class="btn btn-outline-success" type="button" id="login-btn">Login</button>
+                    <button class="btn btn-outline-success" type="button" id="register-btn">Register</button>
+                    <button class="btn btn-outline-danger d-none" type="button" id="logout-btn">Logout</button>
                 </div>
             </div>
         </div>
@@ -40,14 +41,14 @@
         <div class="row align-items-center">
             <div class="col-md-6">
                 <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Search in Forum" aria-label="ค้นหาในฟอรัม">
-                    <button class="btn btn-outline-secondary" type="button">Search</button>
+                    <input type="text" class="form-control" placeholder="ค้นหาในฟอรัม" aria-label="ค้นหาในฟอรัม" id="search-input">
+                    <button class="btn btn-outline-secondary" type="button" id="search-btn">ค้นหา</button>
                 </div>
             </div>
             <div class="col-md-6">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item active"><a href="#main-content">Home</a></li>
+                        <li class="breadcrumb-item"><a href="#main-content">Home</a></li>
                         <li class="breadcrumb-item"><a href="#forum">Forum</a></li>
                     </ol>
                 </nav>
@@ -58,21 +59,22 @@
     <section class="main-content container-fluid">
         <div class="row">
             <div class="side-bar col-md-3">
-                <div class="card mb-3">
-                    <div class="card-body">
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-body text-center">
                         <h4 class="card-title">My Profile</h4>
-                        <img class="card-img-top" src="/assets/square_holder.png" alt="Profile Image">
-                        <h5 class="card-title">Username</h5>
-                        <p class="card-text">Short introduction of user.</p>
+                        <img class="card-img-top rounded-circle mx-auto" style="width: 100px; height: 100px;" src="/assets/square_holder.png" alt="Profile Image">
+                        <h5 class="card-title mt-2">Username</h5>
+                        <p class="card-text text-muted">Short introduction of user.</p>
                     </div>
                     <ul class="list-group list-group-flush">
+                        <li class="list-group-item profile-menu active" data-target="main-content">Home</li>
                         <li class="list-group-item profile-menu" data-target="my-threads">My Thread</li>
                         <li class="list-group-item profile-menu" data-target="notifications">Notification</li>
                         <li class="list-group-item profile-menu" data-target="my-comments">My Comment</li>
                         <li class="list-group-item profile-menu" data-target="edit-profile">Edit Profile</li>
                     </ul>
                 </div>
-                <div class="category-container card mb-3">
+                <div class="category-container card mb-3 shadow-sm">
                     <div class="card-header">Categories</div>
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item">General</li>
@@ -84,7 +86,7 @@
                         <li class="list-group-item">Buy & Sell</li>
                     </ul>
                 </div>
-                <div class="statistics-container card mb-3">
+                <div class="statistics-container card mb-3 shadow-sm">
                     <div class="card-header">Statistics</div>
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item">Total Threads: 100</li>
@@ -97,10 +99,10 @@
             <div class="content-container col-md-9">
                 <!-- Main Content (Create Thread and Forum Threads) -->
                 <div id="main-content">
-                    <div class="card mb-3">
+                    <div class="card mb-3 shadow-sm">
                         <div class="card-header">Create Thread</div>
                         <div class="card-body">
-                            <form>
+                            <form id="create-thread-form">
                                 <div class="mb-3">
                                     <label for="threadTitle" class="form-label">Title</label>
                                     <input type="text" class="form-control" id="threadTitle" required>
@@ -120,29 +122,36 @@
                                 </div>
                                 <div class="mb-3">
                                     <label for="threadContent" class="form-label">Content</label>
-                                    <textarea class="form-control" id="threadContent" rows="3" required></textarea>
+                                    <textarea class="form-control" id="threadContent" rows="4" required></textarea>
                                 </div>
                                 <button type="submit" class="btn btn-primary">Create Thread</button>
                             </form>
+                            <div class="alert alert-success d-none mt-3" id="thread-success">Thread created successfully!</div>
                         </div>
                     </div>
-                    <div class="card mb-3" id="forum">
-                        <div class="card-header">Forum Threads</div>
+                    <div class="card mb-3 shadow-sm" id="forum">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Forum Threads</span>
+                            <select class="form-select w-auto" id="sort-threads">
+                                <option value="newest">Newest First</option>
+                                <option value="popular">Most Popular</option>
+                            </select>
+                        </div>
                         <div class="card-body">
-                            <div class="thread">
+                            <div class="thread" data-thread-id="1">
                                 <h5 class="thread-title">Thread Title 1</h5>
                                 <p class="thread-meta">
                                     <i class="bi bi-person-fill"></i> Posted by User1 |
                                     <i class="bi bi-chat-fill"></i> 10 comments |
-                                    <i class="bi bi-heart-fill"></i> 5 likes
+                                    <i class="bi bi-heart-fill like-btn" data-liked="false"></i> <span class="like-count">5</span> likes
                                 </p>
                             </div>
-                            <div class="thread">
+                            <div class="thread" data-thread-id="2">
                                 <h5 class="thread-title">Thread Title 2</h5>
                                 <p class="thread-meta">
                                     <i class="bi bi-person-fill"></i> Posted by User2 |
                                     <i class="bi bi-chat-fill"></i> 5 comments |
-                                    <i class="bi bi-heart-fill"></i> 2 likes
+                                    <i class="bi bi-heart-fill like-btn" data-liked="false"></i> <span class="like-count">2</span> likes
                                 </p>
                             </div>
                         </div>
@@ -150,50 +159,53 @@
                 </div>
                 <!-- My Threads -->
                 <div id="my-threads" class="d-none">
-                    <div class="card mb-3">
+                    <div class="card mb-3 shadow-sm">
                         <div class="card-header">My Threads</div>
                         <div class="card-body">
-                            <div class="thread">
+                            <div class="thread" data-thread-id="1">
                                 <h5 class="thread-title">Thread Title 1</h5>
                                 <p class="thread-meta">
                                     <i class="bi bi-person-fill"></i> Posted by User1 |
                                     <i class="bi bi-chat-fill"></i> 10 comments |
-                                    <i class="bi bi-heart-fill"></i> 5 likes
+                                    <i class="bi bi-heart-fill like-btn" data-liked="false"></i> <span class="like-count">5</span> likes
                                 </p>
                             </div>
+                            <button class="btn btn-outline-primary mt-3 back-btn" data-target="main-content">Back to Main</button>
                         </div>
                     </div>
                 </div>
                 <!-- Notifications -->
                 <div id="notifications" class="d-none">
-                    <div class="card mb-3">
+                    <div class="card mb-3 shadow-sm">
                         <div class="card-header">Notifications</div>
                         <div class="card-body">
                             <ul class="list-group">
                                 <li class="list-group-item">Notification 1</li>
                                 <li class="list-group-item">Notification 2</li>
                             </ul>
+                            <button class="btn btn-outline-primary mt-3 back-btn" data-target="main-content">Back to Main</button>
                         </div>
                     </div>
                 </div>
                 <!-- My Comments -->
                 <div id="my-comments" class="d-none">
-                    <div class="card mb-3">
+                    <div class="card mb-3 shadow-sm">
                         <div class="card-header">My Comments</div>
                         <div class="card-body">
                             <ul class="list-group">
                                 <li class="list-group-item">Comment 1</li>
                                 <li class="list-group-item">Comment 2</li>
                             </ul>
+                            <button class="btn btn-outline-primary mt-3 back-btn" data-target="main-content">Back to Main</button>
                         </div>
                     </div>
                 </div>
                 <!-- Edit Profile -->
                 <div id="edit-profile" class="d-none">
-                    <div class="card mb-3">
+                    <div class="card mb-3 shadow-sm">
                         <div class="card-header">Edit Profile</div>
                         <div class="card-body">
-                            <form>
+                            <form id="edit-profile-form">
                                 <div class="mb-3">
                                     <label for="username" class="form-label">Username</label>
                                     <input type="text" class="form-control" id="username" value="CurrentUsername" required>
@@ -208,7 +220,8 @@
                                 </div>
                                 <div class="mb-3">
                                     <label for="profileImage" class="form-label">Profile Image</label>
-                                    <input class="form-control" type="file" id="profileImage">
+                                    <input class="form-control" type="file" id="profileImage" accept="image/*">
+                                    <img id="profile-image-preview" class="mt-2 rounded-circle d-none" style="width: 100px; height: 100px;" alt="Profile Preview">
                                 </div>
                                 <div class="mb-3">
                                     <label for="password" class="form-label">New Password</label>
@@ -220,6 +233,8 @@
                                 </div>
                                 <button type="submit" class="btn btn-primary">Save Changes</button>
                             </form>
+                            <div class="alert alert-success d-none mt-3" id="profile-success">Profile updated successfully!</div>
+                            <button class="btn btn-outline-primary mt-3 back-btn" data-target="main-content">Back to Main</button>
                         </div>
                     </div>
                 </div>
@@ -235,15 +250,15 @@
             <div class="col-md-4 social-media-links">
                 <h5>Follow Us</h5>
                 <ul class="list-unstyled">
-                    <li><a href="#" class="text-white">Facebook</a></li>
-                    <li><a href="#" class="text-white">Instagram</a></li>
-                    <li><a href="#" class="text-white">Youtube</a></li>
+                    <li><a href="#" class="text-white"><i class="bi bi-facebook me-2"></i>Facebook</a></li>
+                    <li><a href="#" class="text-white"><i class="bi bi-instagram me-2"></i>Instagram</a></li>
+                    <li><a href="#" class="text-white"><i class="bi bi-youtube me-2"></i>Youtube</a></li>
                 </ul>
             </div>
             <div class="col-md-4 contact">
                 <h5>Contact</h5>
                 <ul class="list-unstyled">
-                    <li><a href="mailto:example@email.com" class="text-white"><i class="bi bi-envelope-at"></i> Email</a></li>
+                    <li><a href="mailto:example@email.com" class="text-white"><i class="bi bi-envelope-at me-2"></i>Email</a></li>
                 </ul>
             </div>
         </div>
