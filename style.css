@@ -6,3 +6,17 @@ body {
     padding: 0;
     background-color: #ffffff;
 }
+
+/* style.css */
+.thread-meta i {
+  margin-right: 5px; 
+  font-size: 0.9rem; 
+  vertical-align: middle; 
+}
+.thread-meta {
+  color: #6c757d; 
+}
+.thread {
+  padding: 10px 0; 
+  border-bottom: 1px solid #dee2e6; 
+}
