@@ -21,3 +21,39 @@ body {
   padding: 10px 0; 
   border-bottom: 1px solid #dee2e6; 
 }
+
+/* Style for profile menu */
+.profile-menu {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.profile-menu:hover {
+    background-color: #f8f9fa;
+}
+
+.profile-menu.active {
+    background-color: #e9ecef;
+    font-weight: bold;
+}
+
+/* Ensure content sections are properly styled */
+.content-container .card {
+    margin-bottom: 20px;
+}
+
+/* Style for threads */
+.thread {
+    padding: 10px 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.thread-meta i {
+    margin-right: 5px;
+    font-size: 0.9rem;
+    vertical-align: middle;
+}
+
+.thread-meta .bi-heart-fill {
+    color: #dc3545;
+}
