@@ -105,59 +105,120 @@
 
             <div class="content-container col-md-9">
 
-                    <!-- Create Thread -->
-                    <div class="card mb-3">
-                        <div class="card-header">Create Thread</div>
-                        <div class="card-body">
-                            <form>
-                                <div class="mb-3">
-                                    <label for="threadTitle" class="form-label">Title</label>
-                                    <input type="text" class="form-control" id="threadTitle" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="threadCategory" class="form-label">Category</label>
-                                    <select class="form-select" id="threadCategory" required>
-                                        <option value="">Select a category</option>
-                                        <option value="general">General</option>
-                                        <option value="academics">Academics</option>
-                                        <option value="housing">Housing</option>
-                                        <option value="jobs">Jobs</option>
-                                        <option value="events">Events</option>
-                                        <option value="lost-and-found">Lost & Found</option>
-                                        <option value="buy-and-sell">Buy & Sell</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="threadContent" class="form-label">Content</label>
-                                    <textarea class="form-control" id="threadContent" rows="3" required></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Create Thread</button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- Threads -->
-                    <div class="card">
-                        <div class="card-header">Forum Threads</div>
-                        <div class="card-body">
-                            <div class="thread">
-                                <h5 class="thread-title">Thread Title 1</h5>
-                                <p class="thread-meta">
-                                    <i class="bi bi-person-fill"></i> Posted by User1 |
-                                    <i class="bi bi-chat-fill"></i> 10 comments |
-                                    <i class="bi bi-heart-fill"></i> 5 likes
-                                </p>
+                <!-- Create Thread -->
+                <div class="card mb-3">
+                    <div class="card-header">Create Thread</div>
+                    <div class="card-body">
+                        <form>
+                            <div class="mb-3">
+                                <label for="threadTitle" class="form-label">Title</label>
+                                <input type="text" class="form-control" id="threadTitle" required>
                             </div>
+                            <div class="mb-3">
+                                <label for="threadCategory" class="form-label">Category</label>
+                                <select class="form-select" id="threadCategory" required>
+                                    <option value="">Select a category</option>
+                                    <option value="general">General</option>
+                                    <option value="academics">Academics</option>
+                                    <option value="housing">Housing</option>
+                                    <option value="jobs">Jobs</option>
+                                    <option value="events">Events</option>
+                                    <option value="lost-and-found">Lost & Found</option>
+                                    <option value="buy-and-sell">Buy & Sell</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="threadContent" class="form-label">Content</label>
+                                <textarea class="form-control" id="threadContent" rows="3" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Create Thread</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Threads -->
+                <div class="card mb-3">
+                    <div class="card-header">Forum Threads</div>
+                    <div class="card-body">
+                        <div class="thread">
+                            <h5 class="thread-title">Thread Title 1</h5>
+                            <p class="thread-meta">
+                                <i class="bi bi-person-fill"></i> Posted by User1 |
+                                <i class="bi bi-chat-fill"></i> 10 comments |
+                                <i class="bi bi-heart-fill"></i> 5 likes
+                            </p>
                         </div>
                     </div>
-                <!-- Notifications -->
+                </div>
+                <!-- My Threads -->
+                <div class="card mb-3">
+                    <div class="card-header">My Threads</div>
+                    <div class="card-body">
+                        <div class="thread">
+                            <h5 class="thread-title">Thread Title 1</h5>
+                            <p class="thread-meta">
+                                <i class="bi bi-person-fill"></i> Posted by User1 |
+                                <i class="bi bi-chat-fill"></i> 10 comments |
+                                <i class="bi bi-heart-fill"></i> 5 likes
+                            </p>
+                        </div>
+                    </div>
+                </div>
 
+                <!-- Notifications -->
+                <div class="card mb-3">
+                    <div class="card-header">Notifications</div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            <li class="list-group-item">Notification 1</li>
+                            <li class="list-group-item">Notification 2</li>
+                        </ul>
+                    </div>
+                </div>
 
                 <!-- My Comments -->
-
+                <div class="card mb-3">
+                    <div class="card-header">My Comments</div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            <li class="list-group-item">Comment 1</li>
+                            <li class="list-group-item">Comment 2</li>
+                        </ul>
+                    </div>
+                </div>
 
                 <!-- Edit Profile -->
-
+                <div class="card mb-3">
+                    <div class="card-header">Edit Profile</div>
+                    <div class="card-body">
+                        <form>
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" value="CurrentUsername" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control disabled" id="email" value="CurrentEmail@example.com" disabled>
+                            </div>
+                            <div class="mb-3">
+                                <label for="bio" class="form-label">Bio</label>
+                                <textarea class="form-control" id="bio" rows="3">Current bio...</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="profileImage" class="form-label">Profile Image</label>
+                                <input class="form-control" type="file" id="profileImage">
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">New Password</label>
+                                <input type="password" class="form-control" id="password">
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                                <input type="password" class="form-control" id="confirmPassword">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+                    </div>
             </div>
         </div>
 
