@@ -17,6 +17,28 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.profile-menu[data-target="main-content"]').classList.add('active');
     document.getElementById('current-page').textContent = 'Forum';
 
+    // ดึงเธรด
+    async function loadThreads() {
+        const response = await fetch('/api/threads.php');
+        const threads = await response.json();
+        const forumBody = document.querySelector('#forum .card-body');
+        forumBody.innerHTML = '';
+        threads.forEach(thread => {
+            const div = document.createElement('div');
+            div.className = 'thread';
+            div.setAttribute('data-thread-id', thread.id);
+            div.innerHTML = `
+            <h5 class="thread-title">${thread.title}</h5>
+            <p class="thread-meta">
+                <i class="bi bi-person-fill"></i> Posted by ${thread.author} |
+                <i class="bi bi-chat-fill"></i> 0 comments |
+                <i class="bi bi-heart-fill like-btn" data-liked="false"></i> <span class="like-count">0</span> likes
+            </p>`;
+            forumBody.appendChild(div);
+        });
+    }
+    loadThreads();
+
     // Function to switch section and update breadcrumb
     const switchSection = (target) => {
         Object.values(sections).forEach(section => section.classList.add('d-none'));
@@ -162,28 +184,34 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Login/Logout simulation
-    let isLoggedIn = false;
-    let currentRole = 'user'; // ค่าเริ่มต้น
-    document.getElementById('login-btn').addEventListener('click', () => {
-        isLoggedIn = true;
-        document.getElementById('login-btn').classList.add('d-none');
-        document.getElementById('register-btn').classList.add('d-none');
-        document.getElementById('logout-btn').classList.remove('d-none');
-        document.querySelector('.card-title.mt-2').textContent = 'LoggedInUser';
-    });
-    document.getElementById('logout-btn').addEventListener('click', () => {
-        isLoggedIn = false;
-        currentRole = 'user';
-        document.getElementById('login-btn').classList.remove('d-none');
-        document.getElementById('register-btn').classList.remove('d-none');
-        document.getElementById('logout-btn').classList.add('d-none');
-        document.querySelector('.card-title.mt-2').textContent = 'Username';
-        switchSection('main-content'); // กลับไปหน้าเริ่มต้นเมื่อล็อกเอาท์
-        // ซ่อนเมนูพิเศษ
-        document.getElementById('menu-report-manager').classList.add('d-none');
-        document.getElementById('menu-category-manager').classList.add('d-none');
-        document.getElementById('menu-user-manager').classList.add('d-none');
+    // ล็อกอิน
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+        try {
+            const response = await fetch('/api/login.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                document.getElementById('login-btn').classList.add('d-none');
+                document.getElementById('register-btn').classList.add('d-none');
+                document.getElementById('logout-btn').classList.remove('d-none');
+                document.querySelector('.card-title.mt-2').textContent = data.user.username;
+                // โหลดหน้าใหม่เพื่ออัปเดตเมนูตาม role
+                window.location.reload();
+            } else {
+                document.getElementById('login-error').classList.remove('d-none');
+                setTimeout(() => document.getElementById('login-error').classList.add('d-none'), 3000);
+            }
+        } catch (err) {
+            console.error(err);
+        }
     });
 
     // Login Form in Modal

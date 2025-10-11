@@ -1,3 +1,8 @@
+<?php
+session_start();
+$user = isset($_SESSION['user']) ? $_SESSION['user'] : null;
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -137,9 +142,16 @@
                         <li class="list-group-item profile-menu" data-target="notifications">Notification</li>
                         <li class="list-group-item profile-menu" data-target="my-comments">My Comment</li>
                         <li class="list-group-item profile-menu" data-target="edit-profile">Edit Profile</li>
-                        <li class="list-group-item profile-menu d-none" data-target="report-manager" id="menu-report-manager">Report Manager</li>
-                        <li class="list-group-item profile-menu d-none" data-target="category-manager" id="menu-category-manager">Category Manager</li>
-                        <li class="list-group-item profile-menu d-none" data-target="user-manager" id="menu-user-manager">User Manager</li>
+                        <?php if ($user && in_array($user['role'], ['moderator', 'admin'])): ?>
+                            <li class="list-group-item profile-menu d-none" data-target="report-manager"
+                                id="menu-report-manager">Report Manager</li>
+                            <li class="list-group-item profile-menu d-none" data-target="category-manager"
+                                id="menu-category-manager">Category Manager</li>
+                        <?php endif; ?>
+                        <?php if ($user && $user['role'] === 'admin'): ?>
+                            <li class="list-group-item profile-menu d-none" data-target="user-manager"
+                                id="menu-user-manager">User Manager</li>
+                        <?php endif; ?>
                     </ul>
                 </div>
                 <div class="category-container card mb-3 shadow-sm">
@@ -324,10 +336,13 @@
                         <div class="card-header">Report Manager</div>
                         <div class="card-body">
                             <ul class="list-group">
-                                <li class="list-group-item">Report 1: Spam thread <button class="btn btn-sm btn-danger float-end">Resolve</button></li>
-                                <li class="list-group-item">Report 2: Offensive comment <button class="btn btn-sm btn-danger float-end">Resolve</button></li>
+                                <li class="list-group-item">Report 1: Spam thread <button
+                                        class="btn btn-sm btn-danger float-end">Resolve</button></li>
+                                <li class="list-group-item">Report 2: Offensive comment <button
+                                        class="btn btn-sm btn-danger float-end">Resolve</button></li>
                             </ul>
-                            <button class="btn btn-outline-primary mt-3 back-btn" data-target="main-content">Back to Main</button>
+                            <button class="btn btn-outline-primary mt-3 back-btn" data-target="main-content">Back to
+                                Main</button>
                         </div>
                     </div>
                 </div>
@@ -344,10 +359,13 @@
                                 <button type="submit" class="btn btn-primary">Add Category</button>
                             </form>
                             <ul class="list-group mt-3">
-                                <li class="list-group-item">General <button class="btn btn-sm btn-danger float-end">Delete</button></li>
-                                <li class="list-group-item">Academics <button class="btn btn-sm btn-danger float-end">Delete</button></li>
+                                <li class="list-group-item">General <button
+                                        class="btn btn-sm btn-danger float-end">Delete</button></li>
+                                <li class="list-group-item">Academics <button
+                                        class="btn btn-sm btn-danger float-end">Delete</button></li>
                             </ul>
-                            <button class="btn btn-outline-primary mt-3 back-btn" data-target="main-content">Back to Main</button>
+                            <button class="btn btn-outline-primary mt-3 back-btn" data-target="main-content">Back to
+                                Main</button>
                         </div>
                     </div>
                 </div>
@@ -357,10 +375,13 @@
                         <div class="card-header">User Manager</div>
                         <div class="card-body">
                             <ul class="list-group">
-                                <li class="list-group-item">User1 <button class="btn btn-sm btn-warning float-end">Ban</button></li>
-                                <li class="list-group-item">User2 <button class="btn btn-sm btn-warning float-end">Ban</button></li>
+                                <li class="list-group-item">User1 <button
+                                        class="btn btn-sm btn-warning float-end">Ban</button></li>
+                                <li class="list-group-item">User2 <button
+                                        class="btn btn-sm btn-warning float-end">Ban</button></li>
                             </ul>
-                            <button class="btn btn-outline-primary mt-3 back-btn" data-target="main-content">Back to Main</button>
+                            <button class="btn btn-outline-primary mt-3 back-btn" data-target="main-content">Back to
+                                Main</button>
                         </div>
                     </div>
                 </div>
