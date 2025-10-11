@@ -74,6 +74,26 @@ body {
     border-radius: 8px;
 }
 
+.breadcrumb {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.breadcrumb-item a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.breadcrumb-item.active {
+    color: #6c757d;
+}
+
+.modal-content {
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .side-bar {

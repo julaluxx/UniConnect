@@ -11,7 +11,7 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg bg-light">
+    <nav class="navbar navbar-expand-lg bg-light sticky-top shadow-sm">
         <div class="container-fluid">
             <a class="navbar-brand fw-bold" href="index.html">UniConnect</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -25,31 +25,95 @@
                         <a class="nav-link active" aria-current="page" href="#main-content">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#forum">Forum</a>
+                        <a class="nav-link" href="#links">Contact</a>
                     </li>
                 </ul>
                 <div class="d-flex gap-2" id="auth-buttons">
-                    <button class="btn btn-outline-success" type="button" id="login-btn">Login</button>
-                    <button class="btn btn-outline-success" type="button" id="register-btn">Register</button>
+                    <button class="btn btn-outline-success" type="button" id="login-btn" data-bs-toggle="modal"
+                        data-bs-target="#loginModal">Login</button>
+                    <button class="btn btn-outline-success" type="button" id="register-btn" data-bs-toggle="modal"
+                        data-bs-target="#registerModal">Register</button>
                     <button class="btn btn-outline-danger d-none" type="button" id="logout-btn">Logout</button>
                 </div>
             </div>
         </div>
     </nav>
 
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Login</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="login-form">
+                        <div class="mb-3">
+                            <label for="login-username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="login-username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="login-password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="login-password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </form>
+                    <div class="alert alert-danger d-none mt-3" id="login-error">Invalid credentials!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="registerModalLabel">Register</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="register-form">
+                        <div class="mb-3">
+                            <label for="register-username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="register-username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="register-email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="register-email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="register-password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="register-password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="register-confirm-password" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="register-confirm-password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Register</button>
+                    </form>
+                    <div class="alert alert-success d-none mt-3" id="register-success">Registered successfully!</div>
+                    <div class="alert alert-danger d-none mt-3" id="register-error">Passwords do not match!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <section id="navigation" class="container-fluid my-3">
         <div class="row align-items-center">
             <div class="col-md-6">
                 <div class="input-group">
-                    <input type="text" class="form-control" placeholder="ค้นหาในฟอรัม" aria-label="ค้นหาในฟอรัม" id="search-input">
+                    <input type="text" class="form-control" placeholder="ค้นหาในฟอรัม" aria-label="ค้นหาในฟอรัม"
+                        id="search-input">
                     <button class="btn btn-outline-secondary" type="button" id="search-btn">ค้นหา</button>
                 </div>
             </div>
             <div class="col-md-6">
                 <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
+                    <ol class="breadcrumb" id="breadcrumb-list">
                         <li class="breadcrumb-item"><a href="#main-content">Home</a></li>
-                        <li class="breadcrumb-item"><a href="#forum">Forum</a></li>
+                        <li class="breadcrumb-item active" aria-current="page" id="current-page">Forum</li>
                     </ol>
                 </nav>
             </div>
@@ -62,7 +126,8 @@
                 <div class="card mb-3 shadow-sm">
                     <div class="card-body text-center">
                         <h4 class="card-title">My Profile</h4>
-                        <img class="card-img-top rounded-circle mx-auto" style="width: 100px; height: 100px;" src="/assets/square_holder.png" alt="Profile Image">
+                        <img class="card-img-top rounded-circle mx-auto" style="width: 100px; height: 100px;"
+                            src="/assets/square_holder.png" alt="Profile Image">
                         <h5 class="card-title mt-2">Username</h5>
                         <p class="card-text text-muted">Short introduction of user.</p>
                     </div>
@@ -126,7 +191,8 @@
                                 </div>
                                 <button type="submit" class="btn btn-primary">Create Thread</button>
                             </form>
-                            <div class="alert alert-success d-none mt-3" id="thread-success">Thread created successfully!</div>
+                            <div class="alert alert-success d-none mt-3" id="thread-success">Thread created
+                                successfully!</div>
                         </div>
                     </div>
                     <div class="card mb-3 shadow-sm" id="forum">
@@ -143,7 +209,8 @@
                                 <p class="thread-meta">
                                     <i class="bi bi-person-fill"></i> Posted by User1 |
                                     <i class="bi bi-chat-fill"></i> 10 comments |
-                                    <i class="bi bi-heart-fill like-btn" data-liked="false"></i> <span class="like-count">5</span> likes
+                                    <i class="bi bi-heart-fill like-btn" data-liked="false"></i> <span
+                                        class="like-count">5</span> likes
                                 </p>
                             </div>
                             <div class="thread" data-thread-id="2">
@@ -151,7 +218,8 @@
                                 <p class="thread-meta">
                                     <i class="bi bi-person-fill"></i> Posted by User2 |
                                     <i class="bi bi-chat-fill"></i> 5 comments |
-                                    <i class="bi bi-heart-fill like-btn" data-liked="false"></i> <span class="like-count">2</span> likes
+                                    <i class="bi bi-heart-fill like-btn" data-liked="false"></i> <span
+                                        class="like-count">2</span> likes
                                 </p>
                             </div>
                         </div>
@@ -167,10 +235,12 @@
                                 <p class="thread-meta">
                                     <i class="bi bi-person-fill"></i> Posted by User1 |
                                     <i class="bi bi-chat-fill"></i> 10 comments |
-                                    <i class="bi bi-heart-fill like-btn" data-liked="false"></i> <span class="like-count">5</span> likes
+                                    <i class="bi bi-heart-fill like-btn" data-liked="false"></i> <span
+                                        class="like-count">5</span> likes
                                 </p>
                             </div>
-                            <button class="btn btn-outline-primary mt-3 back-btn" data-target="main-content">Back to Main</button>
+                            <button class="btn btn-outline-primary mt-3 back-btn" data-target="main-content">Back to
+                                Main</button>
                         </div>
                     </div>
                 </div>
@@ -183,7 +253,8 @@
                                 <li class="list-group-item">Notification 1</li>
                                 <li class="list-group-item">Notification 2</li>
                             </ul>
-                            <button class="btn btn-outline-primary mt-3 back-btn" data-target="main-content">Back to Main</button>
+                            <button class="btn btn-outline-primary mt-3 back-btn" data-target="main-content">Back to
+                                Main</button>
                         </div>
                     </div>
                 </div>
@@ -196,7 +267,8 @@
                                 <li class="list-group-item">Comment 1</li>
                                 <li class="list-group-item">Comment 2</li>
                             </ul>
-                            <button class="btn btn-outline-primary mt-3 back-btn" data-target="main-content">Back to Main</button>
+                            <button class="btn btn-outline-primary mt-3 back-btn" data-target="main-content">Back to
+                                Main</button>
                         </div>
                     </div>
                 </div>
@@ -208,11 +280,13 @@
                             <form id="edit-profile-form">
                                 <div class="mb-3">
                                     <label for="username" class="form-label">Username</label>
-                                    <input type="text" class="form-control" id="username" value="CurrentUsername" required>
+                                    <input type="text" class="form-control" id="username" value="CurrentUsername"
+                                        required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="email" class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="email" value="CurrentEmail@example.com" disabled>
+                                    <input type="email" class="form-control" id="email" value="CurrentEmail@example.com"
+                                        disabled>
                                 </div>
                                 <div class="mb-3">
                                     <label for="bio" class="form-label">Bio</label>
@@ -221,7 +295,8 @@
                                 <div class="mb-3">
                                     <label for="profileImage" class="form-label">Profile Image</label>
                                     <input class="form-control" type="file" id="profileImage" accept="image/*">
-                                    <img id="profile-image-preview" class="mt-2 rounded-circle d-none" style="width: 100px; height: 100px;" alt="Profile Preview">
+                                    <img id="profile-image-preview" class="mt-2 rounded-circle d-none"
+                                        style="width: 100px; height: 100px;" alt="Profile Preview">
                                 </div>
                                 <div class="mb-3">
                                     <label for="password" class="form-label">New Password</label>
@@ -233,8 +308,10 @@
                                 </div>
                                 <button type="submit" class="btn btn-primary">Save Changes</button>
                             </form>
-                            <div class="alert alert-success d-none mt-3" id="profile-success">Profile updated successfully!</div>
-                            <button class="btn btn-outline-primary mt-3 back-btn" data-target="main-content">Back to Main</button>
+                            <div class="alert alert-success d-none mt-3" id="profile-success">Profile updated
+                                successfully!</div>
+                            <button class="btn btn-outline-primary mt-3 back-btn" data-target="main-content">Back to
+                                Main</button>
                         </div>
                     </div>
                 </div>
@@ -247,7 +324,7 @@
             <div class="col-md-4 website-info">
                 <p>This website made by Juju.</p>
             </div>
-            <div class="col-md-4 social-media-links">
+            <div class="col-md-4 social-media-links" id="links">
                 <h5>Follow Us</h5>
                 <ul class="list-unstyled">
                     <li><a href="#" class="text-white"><i class="bi bi-facebook me-2"></i>Facebook</a></li>
@@ -258,7 +335,8 @@
             <div class="col-md-4 contact">
                 <h5>Contact</h5>
                 <ul class="list-unstyled">
-                    <li><a href="mailto:example@email.com" class="text-white"><i class="bi bi-envelope-at me-2"></i>Email</a></li>
+                    <li><a href="mailto:example@email.com" class="text-white"><i
+                                class="bi bi-envelope-at me-2"></i>Email</a></li>
                 </ul>
             </div>
         </div>

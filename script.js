@@ -12,26 +12,43 @@ document.addEventListener('DOMContentLoaded', () => {
     // Show main content by default
     sections['main-content'].classList.remove('d-none');
     document.querySelector('.profile-menu[data-target="main-content"]').classList.add('active');
+    document.getElementById('current-page').textContent = 'Forum';
+
+    // Function to switch section and update breadcrumb
+    const switchSection = (target) => {
+        Object.values(sections).forEach(section => section.classList.add('d-none'));
+        sections[target].classList.remove('d-none');
+        menuItems.forEach(menu => menu.classList.remove('active'));
+        document.querySelector(`.profile-menu[data-target="${target}"]`).classList.add('active');
+
+        // Update breadcrumb
+        let currentPageText = 'Forum';
+        if (target === 'my-threads') currentPageText = 'My Threads';
+        else if (target === 'notifications') currentPageText = 'Notifications';
+        else if (target === 'my-comments') currentPageText = 'My Comments';
+        else if (target === 'edit-profile') currentPageText = 'Edit Profile';
+        document.getElementById('current-page').textContent = currentPageText;
+    };
 
     // Menu click event
     menuItems.forEach(item => {
         item.addEventListener('click', () => {
-            Object.values(sections).forEach(section => section.classList.add('d-none'));
             const target = item.getAttribute('data-target');
-            sections[target].classList.remove('d-none');
-            menuItems.forEach(menu => menu.classList.remove('active'));
-            item.classList.add('active');
+            switchSection(target);
         });
     });
 
     // Back button handling
     document.querySelectorAll('.back-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            Object.values(sections).forEach(section => section.classList.add('d-none'));
-            sections['main-content'].classList.remove('d-none');
-            menuItems.forEach(menu => menu.classList.remove('active'));
-            document.querySelector('.profile-menu[data-target="main-content"]').classList.add('active');
+            switchSection('main-content');
         });
+    });
+
+    // Breadcrumb Home link handling
+    document.querySelector('.breadcrumb-item a[href="#main-content"]').addEventListener('click', (e) => {
+        e.preventDefault();
+        switchSection('main-content');
     });
 
     // Create Thread form
@@ -49,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const forumBody = document.querySelector('#forum .card-body');
             const newThread = document.createElement('div');
             newThread.className = 'thread';
+            newThread.setAttribute('data-thread-id', Date.now()); // ใช้ timestamp เพื่อจำลอง ID ใหม่
             newThread.innerHTML = `
                 <h5 class="thread-title">${title}</h5>
                 <p class="thread-meta">
@@ -67,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const password = document.getElementById('password').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
         if (password && password !== confirmPassword) {
-            alert('Passwords do not match!');
+            alert('รหัสผ่านไม่ตรงกัน!');
             return;
         }
         document.getElementById('profile-success').classList.remove('d-none');
@@ -153,5 +171,51 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('register-btn').classList.remove('d-none');
         document.getElementById('logout-btn').classList.add('d-none');
         document.querySelector('.card-title.mt-2').textContent = 'Username';
+        switchSection('main-content'); // กลับไปหน้าเริ่มต้นเมื่อล็อกเอาท์
+    });
+
+    // Login Form in Modal
+    const loginForm = document.getElementById('login-form');
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+        if (username && password) {
+            isLoggedIn = true;
+            document.getElementById('login-btn').classList.add('d-none');
+            document.getElementById('register-btn').classList.add('d-none');
+            document.getElementById('logout-btn').classList.remove('d-none');
+            document.querySelector('.card-title.mt-2').textContent = username;
+            const loginModal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
+            loginModal.hide();
+            switchSection('main-content');
+        } else {
+            document.getElementById('login-error').classList.remove('d-none');
+            setTimeout(() => document.getElementById('login-error').classList.add('d-none'), 3000);
+        }
+    });
+
+    // Register Form in Modal
+    const registerForm = document.getElementById('register-form');
+    registerForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('register-username').value;
+        const email = document.getElementById('register-email').value;
+        const password = document.getElementById('register-password').value;
+        const confirmPassword = document.getElementById('register-confirm-password').value;
+        if (password !== confirmPassword) {
+            document.getElementById('register-error').classList.remove('d-none');
+            setTimeout(() => document.getElementById('register-error').classList.add('d-none'), 3000);
+            return;
+        }
+        if (username && email && password) {
+            document.getElementById('register-success').classList.remove('d-none');
+            setTimeout(() => {
+                document.getElementById('register-success').classList.add('d-none');
+                const registerModal = bootstrap.Modal.getInstance(document.getElementById('registerModal'));
+                registerModal.hide();
+            }, 3000);
+            registerForm.reset();
+        }
     });
 });
