@@ -6,7 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
         'my-threads': document.getElementById('my-threads'),
         'notifications': document.getElementById('notifications'),
         'my-comments': document.getElementById('my-comments'),
-        'edit-profile': document.getElementById('edit-profile')
+        'edit-profile': document.getElementById('edit-profile'),
+        'report-manager': document.getElementById('report-manager'),
+        'category-manager': document.getElementById('category-manager'),
+        'user-manager': document.getElementById('user-manager')
     };
 
     // Show main content by default
@@ -27,6 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (target === 'notifications') currentPageText = 'Notifications';
         else if (target === 'my-comments') currentPageText = 'My Comments';
         else if (target === 'edit-profile') currentPageText = 'Edit Profile';
+        else if (target === 'report-manager') currentPageText = 'Report Manager';
+        else if (target === 'category-manager') currentPageText = 'Category Manager';
+        else if (target === 'user-manager') currentPageText = 'User Manager';
         document.getElementById('current-page').textContent = currentPageText;
     };
 
@@ -158,6 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Login/Logout simulation
     let isLoggedIn = false;
+    let currentRole = 'user'; // ค่าเริ่มต้น
     document.getElementById('login-btn').addEventListener('click', () => {
         isLoggedIn = true;
         document.getElementById('login-btn').classList.add('d-none');
@@ -167,11 +174,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('logout-btn').addEventListener('click', () => {
         isLoggedIn = false;
+        currentRole = 'user';
         document.getElementById('login-btn').classList.remove('d-none');
         document.getElementById('register-btn').classList.remove('d-none');
         document.getElementById('logout-btn').classList.add('d-none');
         document.querySelector('.card-title.mt-2').textContent = 'Username';
         switchSection('main-content'); // กลับไปหน้าเริ่มต้นเมื่อล็อกเอาท์
+        // ซ่อนเมนูพิเศษ
+        document.getElementById('menu-report-manager').classList.add('d-none');
+        document.getElementById('menu-category-manager').classList.add('d-none');
+        document.getElementById('menu-user-manager').classList.add('d-none');
     });
 
     // Login Form in Modal
@@ -186,6 +198,21 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('register-btn').classList.add('d-none');
             document.getElementById('logout-btn').classList.remove('d-none');
             document.querySelector('.card-title.mt-2').textContent = username;
+
+            // กำหนด role ตาม username (จำลอง)
+            currentRole = 'user';
+            if (username === 'mod') currentRole = 'moderator';
+            else if (username === 'admin') currentRole = 'admin';
+
+            // แสดงเมนูตาม role
+            if (currentRole === 'moderator' || currentRole === 'admin') {
+                document.getElementById('menu-report-manager').classList.remove('d-none');
+                document.getElementById('menu-category-manager').classList.remove('d-none');
+            }
+            if (currentRole === 'admin') {
+                document.getElementById('menu-user-manager').classList.remove('d-none');
+            }
+
             const loginModal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
             loginModal.hide();
             switchSection('main-content');
@@ -218,4 +245,30 @@ document.addEventListener('DOMContentLoaded', () => {
             registerForm.reset();
         }
     });
+
+    // Add Category form (สำหรับ Category Manager)
+    const addCategoryForm = document.getElementById('add-category-form');
+    if (addCategoryForm) {
+        addCategoryForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newCat = document.getElementById('new-category').value;
+            if (newCat) {
+                // เพิ่มลง sidebar categories
+                const catList = document.querySelector('.category-container ul.list-group');
+                const newLi = document.createElement('li');
+                newLi.className = 'list-group-item';
+                newLi.innerHTML = `${newCat} <button class="btn btn-sm btn-danger float-end">Delete</button>`;
+                catList.appendChild(newLi);
+
+                // เพิ่มลง select ใน create thread
+                const select = document.getElementById('threadCategory');
+                const option = document.createElement('option');
+                option.value = newCat.toLowerCase().replace(/\s/g, '-');
+                option.textContent = newCat;
+                select.appendChild(option);
+
+                addCategoryForm.reset();
+            }
+        });
+    }
 });

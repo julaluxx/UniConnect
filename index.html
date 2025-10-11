@@ -137,6 +137,9 @@
                         <li class="list-group-item profile-menu" data-target="notifications">Notification</li>
                         <li class="list-group-item profile-menu" data-target="my-comments">My Comment</li>
                         <li class="list-group-item profile-menu" data-target="edit-profile">Edit Profile</li>
+                        <li class="list-group-item profile-menu d-none" data-target="report-manager" id="menu-report-manager">Report Manager</li>
+                        <li class="list-group-item profile-menu d-none" data-target="category-manager" id="menu-category-manager">Category Manager</li>
+                        <li class="list-group-item profile-menu d-none" data-target="user-manager" id="menu-user-manager">User Manager</li>
                     </ul>
                 </div>
                 <div class="category-container card mb-3 shadow-sm">
@@ -312,6 +315,52 @@
                                 successfully!</div>
                             <button class="btn btn-outline-primary mt-3 back-btn" data-target="main-content">Back to
                                 Main</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Report Manager (สำหรับ Moderator และ Admin) -->
+                <div id="report-manager" class="d-none">
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-header">Report Manager</div>
+                        <div class="card-body">
+                            <ul class="list-group">
+                                <li class="list-group-item">Report 1: Spam thread <button class="btn btn-sm btn-danger float-end">Resolve</button></li>
+                                <li class="list-group-item">Report 2: Offensive comment <button class="btn btn-sm btn-danger float-end">Resolve</button></li>
+                            </ul>
+                            <button class="btn btn-outline-primary mt-3 back-btn" data-target="main-content">Back to Main</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Category Manager (สำหรับ Moderator และ Admin) -->
+                <div id="category-manager" class="d-none">
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-header">Category Manager</div>
+                        <div class="card-body">
+                            <form id="add-category-form">
+                                <div class="mb-3">
+                                    <label for="new-category" class="form-label">New Category</label>
+                                    <input type="text" class="form-control" id="new-category" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Add Category</button>
+                            </form>
+                            <ul class="list-group mt-3">
+                                <li class="list-group-item">General <button class="btn btn-sm btn-danger float-end">Delete</button></li>
+                                <li class="list-group-item">Academics <button class="btn btn-sm btn-danger float-end">Delete</button></li>
+                            </ul>
+                            <button class="btn btn-outline-primary mt-3 back-btn" data-target="main-content">Back to Main</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- User Manager (สำหรับ Admin เท่านั้น) -->
+                <div id="user-manager" class="d-none">
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-header">User Manager</div>
+                        <div class="card-body">
+                            <ul class="list-group">
+                                <li class="list-group-item">User1 <button class="btn btn-sm btn-warning float-end">Ban</button></li>
+                                <li class="list-group-item">User2 <button class="btn btn-sm btn-warning float-end">Ban</button></li>
+                            </ul>
+                            <button class="btn btn-outline-primary mt-3 back-btn" data-target="main-content">Back to Main</button>
                         </div>
                     </div>
                 </div>
