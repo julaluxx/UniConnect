@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
-require '../config.php';
-require '../vendor/autoload.php';
+require 'config.php';
+require 'vendor/autoload.php';
 use \Firebase\JWT\JWT;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($user && password_verify($password, $user['password'])) {
         $payload = ['user_id' => $user['id'], 'username' => $user['username'], 'role' => $user['role']];
-        $jwt = JWT::encode($payload, 'your_jwt_secret_key', 'HS256');
+        $jwt = JWT::encode($payload, JWT_SECRET, 'HS256');
         echo json_encode(['token' => $jwt, 'user' => $payload]);
     } else {
         http_response_code(401);

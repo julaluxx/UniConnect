@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+    let currentRole = 'guest'; // Default role
+
     // Menu handling
     const menuItems = document.querySelectorAll('.profile-menu');
     const sections = {
@@ -19,32 +21,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ดึงเธรด
     async function loadThreads() {
-        const response = await fetch('/api/threads.php');
-        const threads = await response.json();
-        const forumBody = document.querySelector('#forum .card-body');
-        forumBody.innerHTML = '';
-        threads.forEach(thread => {
-            const div = document.createElement('div');
-            div.className = 'thread';
-            div.setAttribute('data-thread-id', thread.id);
-            div.innerHTML = `
-            <h5 class="thread-title">${thread.title}</h5>
-            <p class="thread-meta">
-                <i class="bi bi-person-fill"></i> Posted by ${thread.author} |
-                <i class="bi bi-chat-fill"></i> 0 comments |
-                <i class="bi bi-heart-fill like-btn" data-liked="false"></i> <span class="like-count">0</span> likes
-            </p>`;
-            forumBody.appendChild(div);
-        });
+        try {
+            const response = await fetch('threads.php'); // ปรับ path ให้ตรง (สมมติอยู่ root)
+            if (!response.ok) throw new Error('Failed to load threads');
+            const threads = await response.json();
+            const forumBody = document.querySelector('#forum .card-body');
+            forumBody.innerHTML = '';
+            threads.forEach(thread => {
+                const div = document.createElement('div');
+                div.className = 'thread';
+                div.setAttribute('data-thread-id', thread.id);
+                div.innerHTML = `
+                    <h5 class="thread-title"><a href="thread.php?id=${thread.id}">${thread.title}</a></h5>
+                    <p class="thread-meta">
+                        <i class="bi bi-person-fill"></i> Posted by ${thread.author} |
+                        <i class="bi bi-chat-fill"></i> ${thread.comments || 0} comments |
+                        <i class="bi bi-heart-fill like-btn" data-liked="false"></i> <span class="like-count">${thread.likes || 0}</span> likes
+                    </p>`;
+                forumBody.appendChild(div);
+            });
+        } catch (err) {
+            console.error('Error loading threads:', err);
+        }
     }
     loadThreads();
 
     // Function to switch section and update breadcrumb
     const switchSection = (target) => {
-        Object.values(sections).forEach(section => section.classList.add('d-none'));
+        Object.values(sections).forEach(section => section && section.classList.add('d-none'));
         sections[target].classList.remove('d-none');
         menuItems.forEach(menu => menu.classList.remove('active'));
-        document.querySelector(`.profile-menu[data-target="${target}"]`).classList.add('active');
+        const activeMenu = document.querySelector(`.profile-menu[data-target="${target}"]`);
+        if (activeMenu) activeMenu.classList.add('active');
 
         // Update breadcrumb
         let currentPageText = 'Forum';
@@ -74,205 +82,140 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Breadcrumb Home link handling
-    document.querySelector('.breadcrumb-item a[href="#main-content"]').addEventListener('click', (e) => {
-        e.preventDefault();
-        switchSection('main-content');
-    });
+    const homeLink = document.querySelector('.breadcrumb-item a[href="#main-content"]');
+    if (homeLink) {
+        homeLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchSection('main-content');
+        });
+    }
 
     // Create Thread form
     const threadForm = document.getElementById('create-thread-form');
-    threadForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const title = document.getElementById('threadTitle').value;
-        const category = document.getElementById('threadCategory').value;
-        const content = document.getElementById('threadContent').value;
-        if (title && category && content) {
-            document.getElementById('thread-success').classList.remove('d-none');
-            setTimeout(() => document.getElementById('thread-success').classList.add('d-none'), 3000);
-            threadForm.reset();
-            // Simulate adding thread to forum
-            const forumBody = document.querySelector('#forum .card-body');
-            const newThread = document.createElement('div');
-            newThread.className = 'thread';
-            newThread.setAttribute('data-thread-id', Date.now()); // ใช้ timestamp เพื่อจำลอง ID ใหม่
-            newThread.innerHTML = `
-                <h5 class="thread-title">${title}</h5>
-                <p class="thread-meta">
-                    <i class="bi bi-person-fill"></i> Posted by Username |
-                    <i class="bi bi-chat-fill"></i> 0 comments |
-                    <i class="bi bi-heart-fill like-btn" data-liked="false"></i> <span class="like-count">0</span> likes
-                </p>`;
-            forumBody.prepend(newThread);
-        }
-    });
+    if (threadForm) {
+        threadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('threadTitle').value;
+            const category = document.getElementById('threadCategory').value;
+            const content = document.getElementById('threadContent').value;
+            const token = localStorage.getItem('token');
+            if (title && category && content && token) {
+                try {
+                    const user = JSON.parse(localStorage.getItem('user'));
+                    const response = await fetch('threads.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify({ title, content, category_id: category, author_id: user.user_id })
+                    });
+                    if (!response.ok) throw new Error('Failed to create thread');
+                    document.getElementById('thread-success').classList.remove('d-none');
+                    setTimeout(() => document.getElementById('thread-success').classList.add('d-none'), 3000);
+                    threadForm.reset();
+                    loadThreads(); // Reload threads
+                } catch (err) {
+                    console.error('Error creating thread:', err);
+                }
+            }
+        });
+    }
 
     // Edit Profile form
     const profileForm = document.getElementById('edit-profile-form');
-    profileForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        if (password && password !== confirmPassword) {
-            alert('รหัสผ่านไม่ตรงกัน!');
-            return;
-        }
-        document.getElementById('profile-success').classList.remove('d-none');
-        setTimeout(() => document.getElementById('profile-success').classList.add('d-none'), 3000);
-        profileForm.reset();
-        document.getElementById('username').value = 'CurrentUsername';
-        document.getElementById('bio').value = 'Current bio...';
-    });
-
-    // Profile image preview
-    document.getElementById('profileImage').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const preview = document.getElementById('profile-image-preview');
-                preview.src = e.target.result;
-                preview.classList.remove('d-none');
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    // Like button handling
-    document.addEventListener('click', (e) => {
-        if (e.target.classList.contains('like-btn')) {
-            const liked = e.target.getAttribute('data-liked') === 'true';
-            const likeCountSpan = e.target.nextElementSibling;
-            let likeCount = parseInt(likeCountSpan.textContent);
-            if (liked) {
-                likeCount--;
-                e.target.setAttribute('data-liked', 'false');
-                e.target.classList.remove('liked');
-            } else {
-                likeCount++;
-                e.target.setAttribute('data-liked', 'true');
-                e.target.classList.add('liked');
+    if (profileForm) {
+        profileForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            if (password && password !== confirmPassword) {
+                alert('รหัสผ่านไม่ตรงกัน!');
+                return;
             }
-            likeCountSpan.textContent = likeCount;
-        }
-    });
-
-    // Thread sorting
-    document.getElementById('sort-threads').addEventListener('change', (e) => {
-        const sortBy = e.target.value;
-        const forumBody = document.querySelector('#forum .card-body');
-        const threads = Array.from(forumBody.querySelectorAll('.thread'));
-        threads.sort((a, b) => {
-            if (sortBy === 'newest') {
-                return parseInt(b.getAttribute('data-thread-id')) - parseInt(a.getAttribute('data-thread-id'));
-            } else {
-                const likesA = parseInt(a.querySelector('.like-count').textContent);
-                const likesB = parseInt(b.querySelector('.like-count').textContent);
-                return likesB - likesA;
-            }
+            document.getElementById('profile-success').classList.remove('d-none');
+            setTimeout(() => document.getElementById('profile-success').classList.add('d-none'), 3000);
+            // TODO: Add API call to update profile
         });
-        forumBody.innerHTML = '';
-        threads.forEach(thread => forumBody.appendChild(thread));
-    });
+    }
 
-    // Search functionality
-    document.getElementById('search-btn').addEventListener('click', () => {
-        const query = document.getElementById('search-input').value.toLowerCase();
-        const threads = document.querySelectorAll('.thread');
-        threads.forEach(thread => {
-            const title = thread.querySelector('.thread-title').textContent.toLowerCase();
-            thread.style.display = title.includes(query) ? 'block' : 'none';
-        });
-    });
-
-    // ล็อกอิน
-    document.getElementById('login-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const username = document.getElementById('login-username').value;
-        const password = document.getElementById('login-password').value;
-        try {
-            const response = await fetch('/api/login.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
-            const data = await response.json();
-            if (response.ok) {
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify(data.user));
-                document.getElementById('login-btn').classList.add('d-none');
-                document.getElementById('register-btn').classList.add('d-none');
-                document.getElementById('logout-btn').classList.remove('d-none');
-                document.querySelector('.card-title.mt-2').textContent = data.user.username;
-                // โหลดหน้าใหม่เพื่ออัปเดตเมนูตาม role
-                window.location.reload();
-            } else {
-                document.getElementById('login-error').classList.remove('d-none');
-                setTimeout(() => document.getElementById('login-error').classList.add('d-none'), 3000);
-            }
-        } catch (err) {
-            console.error(err);
-        }
-    });
-
-    // Login Form in Modal
+    // ล็อกอิน (ลบ duplication)
     const loginForm = document.getElementById('login-form');
-    loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const username = document.getElementById('login-username').value;
-        const password = document.getElementById('login-password').value;
-        if (username && password) {
-            isLoggedIn = true;
-            document.getElementById('login-btn').classList.add('d-none');
-            document.getElementById('register-btn').classList.add('d-none');
-            document.getElementById('logout-btn').classList.remove('d-none');
-            document.querySelector('.card-title.mt-2').textContent = username;
-
-            // กำหนด role ตาม username (จำลอง)
-            currentRole = 'user';
-            if (username === 'mod') currentRole = 'moderator';
-            else if (username === 'admin') currentRole = 'admin';
-
-            // แสดงเมนูตาม role
-            if (currentRole === 'moderator' || currentRole === 'admin') {
-                document.getElementById('menu-report-manager').classList.remove('d-none');
-                document.getElementById('menu-category-manager').classList.remove('d-none');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            try {
+                const response = await fetch('login.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    document.getElementById('login-btn').classList.add('d-none');
+                    document.getElementById('register-btn').classList.add('d-none');
+                    document.getElementById('logout-btn').classList.remove('d-none');
+                    document.querySelector('.card-title.mt-2').textContent = data.user.username;
+                    currentRole = data.user.role;
+                    // แสดงเมนูตาม role
+                    if (currentRole === 'moderator' || currentRole === 'admin') {
+                        document.getElementById('menu-report-manager').classList.remove('d-none');
+                        document.getElementById('menu-category-manager').classList.remove('d-none');
+                    }
+                    if (currentRole === 'admin') {
+                        document.getElementById('menu-user-manager').classList.remove('d-none');
+                    }
+                    const loginModal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
+                    loginModal.hide();
+                    switchSection('main-content');
+                    loadThreads(); // Reload after login
+                } else {
+                    document.getElementById('login-error').classList.remove('d-none');
+                    setTimeout(() => document.getElementById('login-error').classList.add('d-none'), 3000);
+                }
+            } catch (err) {
+                console.error('Login error:', err);
             }
-            if (currentRole === 'admin') {
-                document.getElementById('menu-user-manager').classList.remove('d-none');
-            }
-
-            const loginModal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
-            loginModal.hide();
-            switchSection('main-content');
-        } else {
-            document.getElementById('login-error').classList.remove('d-none');
-            setTimeout(() => document.getElementById('login-error').classList.add('d-none'), 3000);
-        }
-    });
+        });
+    }
 
     // Register Form in Modal
     const registerForm = document.getElementById('register-form');
-    registerForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const username = document.getElementById('register-username').value;
-        const email = document.getElementById('register-email').value;
-        const password = document.getElementById('register-password').value;
-        const confirmPassword = document.getElementById('register-confirm-password').value;
-        if (password !== confirmPassword) {
-            document.getElementById('register-error').classList.remove('d-none');
-            setTimeout(() => document.getElementById('register-error').classList.add('d-none'), 3000);
-            return;
-        }
-        if (username && email && password) {
-            document.getElementById('register-success').classList.remove('d-none');
-            setTimeout(() => {
-                document.getElementById('register-success').classList.add('d-none');
-                const registerModal = bootstrap.Modal.getInstance(document.getElementById('registerModal'));
-                registerModal.hide();
-            }, 3000);
-            registerForm.reset();
-        }
-    });
+    if (registerForm) {
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('register-username').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('register-confirm-password').value;
+            if (password !== confirmPassword) {
+                document.getElementById('register-error').classList.remove('d-none');
+                setTimeout(() => document.getElementById('register-error').classList.add('d-none'), 3000);
+                return;
+            }
+            try {
+                const response = await fetch('register.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+                if (response.ok) {
+                    document.getElementById('register-success').classList.remove('d-none');
+                    setTimeout(() => {
+                        document.getElementById('register-success').classList.add('d-none');
+                        const registerModal = bootstrap.Modal.getInstance(document.getElementById('registerModal'));
+                        registerModal.hide();
+                    }, 3000);
+                    registerForm.reset();
+                } else {
+                    alert('Registration failed');
+                }
+            } catch (err) {
+                console.error('Register error:', err);
+            }
+        });
+    }
 
     // Add Category form (สำหรับ Category Manager)
     const addCategoryForm = document.getElementById('add-category-form');
@@ -281,14 +224,14 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const newCat = document.getElementById('new-category').value;
             if (newCat) {
-                // เพิ่มลง sidebar categories
+                // TODO: Add API call to create category
+                // สำหรับตอนนี้จำลอง
                 const catList = document.querySelector('.category-container ul.list-group');
                 const newLi = document.createElement('li');
                 newLi.className = 'list-group-item';
                 newLi.innerHTML = `${newCat} <button class="btn btn-sm btn-danger float-end">Delete</button>`;
                 catList.appendChild(newLi);
 
-                // เพิ่มลง select ใน create thread
                 const select = document.getElementById('threadCategory');
                 const option = document.createElement('option');
                 option.value = newCat.toLowerCase().replace(/\s/g, '-');

@@ -1,0 +1,6 @@
+{
+    "host": "localhost",
+    "username": "uniconnect",
+    "password": "securepassword",
+    "database": "uniconnect_db"
+}

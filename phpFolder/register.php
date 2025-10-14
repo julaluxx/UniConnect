@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
-require '../config.php';
-require '../vendor/autoload.php';
+require 'config.php'; // ปรับ path ถ้าจำเป็น
+require 'vendor/autoload.php'; // สมมติมี composer สำหรับ JWT
 use \Firebase\JWT\JWT;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $userId = $pdo->lastInsertId();
 
         $payload = ['user_id' => $userId, 'username' => $username, 'role' => $role];
-        $jwt = JWT::encode($payload, 'your_jwt_secret_key', 'HS256');
+        $jwt = JWT::encode($payload, JWT_SECRET, 'HS256');
         echo json_encode(['token' => $jwt, 'user' => $payload]);
     } catch (PDOException $e) {
         http_response_code(400);
