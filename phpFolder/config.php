@@ -1,7 +1,7 @@
 <?php
 define('DB_HOST', 'localhost');
 define('DB_USER', 'root');
-define('DB_PASS', 'dbroot'); // เปลี่ยนเป็นรหัสผ่าน MySQL ของคุณ
+define('DB_PASS', 'dbroot'); 
 define('DB_NAME', 'uniconnect');
 
 try {

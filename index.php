@@ -169,9 +169,18 @@ $user = isset($_SESSION['user']) ? $_SESSION['user'] : null;
                 <div class="statistics-container card mb-3 shadow-sm">
                     <div class="card-header">Statistics</div>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item">Total Threads: 100</li>
-                        <li class="list-group-item">Total Comments: 500</li>
-                        <li class="list-group-item">Total Users: 200</li>
+                        <li class="list-group-item" id="users-online">Users Online: 10
+                            <svg width="20" height="20">
+                                <circle cx="8" cy="8" r="5" stroke="green" stroke-width="1" fill="green" />
+                            </svg>
+                        </li>
+                        <li class="list-group-item" id="total-users">Total Users: 200
+                            <svg width="20" height="20">
+                                <circle cx="8" cy="8" r="5" stroke="#f5d142" stroke-width="1" fill="#f5d142" />
+                            </svg>
+                        </li>
+                        <li class="list-group-item" id="total-threads">Total Threads: 100</li>
+                        <li class="list-group-item" id="total-comments">Total Comments: 500</li>
                     </ul>
                 </div>
             </div>
