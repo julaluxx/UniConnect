@@ -109,8 +109,6 @@ $user = isset($_SESSION['user']) ? $_SESSION['user'] : null;
     <section id="navigation" class="container-fluid my-3">
         <div class="row align-items-center">
             <div class="col-md-6">
-                <!-- ส่วนอื่นๆ ของ HTML เดิม (ลบ truncated) -->
-                <!-- สมมติมี sidebar, main-content, forum card, etc. -->
                 <div id="main-content">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="#main-content">Home</a></li>
