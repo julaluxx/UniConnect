@@ -1,7 +1,63 @@
+// index.php
+
 <?php
-session_start();
-$user = isset($_SESSION['user']) ? $_SESSION['user'] : null;
-// ไม่ดึง threads ด้วย PHP เพราะใช้ JS fetch แทน
+include 'db.php';
+
+// รับค่า id ของผู้ใช้จาก URL (ถ้าไม่มีจะเป็น null)
+$guest = $_GET['id'] ?? null;
+
+if ($guest) {
+    // 🔹 ดึงข้อมูลผู้ใช้จากฐานข้อมูล
+    $stmt = $conn->prepare('SELECT * FROM users WHERE id = ?');
+    $stmt->execute([$guest]);
+    $userData = $stmt->fetch();
+
+    // 🔹 ดึงข้อมูล threads ทั้งหมด (รวมชื่อผู้เขียนและหมวดหมู่)
+    $threadsStmt = $conn->query('
+        SELECT t.id, t.title, t.content, t.created_at, 
+               u.username AS author_name, 
+               c.name AS category_name
+        FROM threads t
+        JOIN users u ON t.author_id = u.id
+        JOIN categories c ON t.category_id = c.id
+        ORDER BY t.created_at DESC
+    ');
+    $threads = $threadsStmt->fetchAll();
+} else {
+    $userData = null;
+    $threads = [];
+}
+?>
+
+<?php
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $username = $_POST['username'];
+    $password = $_POST['password'];
+
+    // ดึงข้อมูลผู้ใช้จากฐานข้อมูล
+    $stmt = $conn->prepare("SELECT * FROM users WHERE username = :username");
+    $stmt->execute(['username' => $username]);
+    $user = $stmt->fetch();
+
+    // ตรวจสอบการมีอยู่ของผู้ใช้และรหัสผ่าน
+    if ($user && password_verify($password, $user['password_hash'])) {
+        $_SESSION['user_id'] = $user['user_id'];
+        $_SESSION['username'] = $user['username'];
+        $_SESSION['role'] = $user['role'];
+
+        // ตรวจสอบบทบาทของผู้ใช้และเปลี่ยนเส้นทางไปยังหน้า Dashboard ที่เหมาะสม
+        if ($user['role'] == 'Admin') {
+            header('Location: ./users/admin_dashboard.php');
+        } elseif ($user['role'] == 'Moderator') {
+            header('Location: ./users/moderator_dashboard.php');
+        } else {
+            header('Location: ./users/user_dashboard.php');
+        }
+        exit();
+    } else {
+        $error = "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+    }
+}
 ?>
 
 <!DOCTYPE html>

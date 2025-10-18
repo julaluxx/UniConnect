@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS threads (
     category_id INT NOT NULL,
     author_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,
     FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -39,6 +40,7 @@ CREATE TABLE IF NOT EXISTS comments (
     thread_id INT NOT NULL,
     author_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (thread_id) REFERENCES threads(id) ON DELETE CASCADE,
     FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -49,6 +51,7 @@ CREATE TABLE IF NOT EXISTS likes (
     thread_id INT NOT NULL,
     user_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(thread_id, user_id),
     FOREIGN KEY (thread_id) REFERENCES threads(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -61,9 +64,18 @@ CREATE TABLE IF NOT EXISTS reports (
     thread_id INT,
     status ENUM('pending', 'resolved') DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (reported_by) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (thread_id) REFERENCES threads(id) ON DELETE CASCADE
 );
 
 -- เพิ่มข้อมูลเริ่มต้นสำหรับ categories
-INSERT IGNORE INTO categories (name) VALUES ('General'), ('Academics'), ('Housing'), ('Jobs'), ('Events'), ('Lost & Found'), ('Buy & Sell');
+INSERT IGNORE INTO categories (name) VALUES 
+('General'), ('Academics'), ('Housing'), ('Jobs'), ('Events'), ('Lost & Found'), ('Buy & Sell');
+
+-- ผู้ใช้เริ่มต้น (admin)
+INSERT IGNORE INTO users (username, email, password, role) VALUES 
+('admin', 'admin_uc@email.com', 'admin_password', 'admin');
+
+-- คำสั่งสำหรับนำเข้าไฟล์นี้:
+-- mysql -u uniconnect -p uniconnect_db < uniconnect_db.sql
