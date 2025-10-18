@@ -1,6 +1,5 @@
-// db.php
-
 <?php
+// db.php
 $host = 'localhost';
 $db = 'uniconnect_db';
 $user = 'uniconnect';
@@ -17,6 +16,8 @@ $options = [
 try {
     $conn = new PDO($dsn, $user, $pass, $options);
 } catch (PDOException $e) {
-    throw new PDOException($e->getMessage(), (int)$e->getCode());
+    // ปล่อยข้อมูล error แบบจำกัด เพื่อไม่ให้แสดงข้อมูลความลับ
+    echo "Database connection failed.";
+    exit;
 }
 ?>
