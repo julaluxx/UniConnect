@@ -1,5 +1,6 @@
-<?php
 // db.php
+
+<?php
 $host = 'localhost';
 $db = 'uniconnect_db';
 $user = 'uniconnect';
