@@ -1,34 +1,29 @@
 <?php
 session_start();
 require 'pdo.php';
-
-header('Content-Type: application/json');
-
 if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['status' => 'error', 'message' => 'ต้องเข้าสู่ระบบก่อน']);
+    header('Location: login.php');
     exit;
 }
 
-$title = trim($_POST['title'] ?? '');
-$content = trim($_POST['content'] ?? '');
-$category_id = intval($_POST['category_id'] ?? 0);
+$stmt = $conn->query("SELECT * FROM categories");
+$categories = $stmt->fetchAll();
 
-if (!$title || !$content || !$category_id) {
-    echo json_encode(['status' => 'error', 'message' => 'กรุณากรอกข้อมูลให้ครบ']);
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $stmt = $conn->prepare("INSERT INTO threads (title,content,category_id,author_id) VALUES (?,?,?,?)");
+    $stmt->execute([$_POST['title'], $_POST['content'], $_POST['category'], $_SESSION['user_id']]);
+    header('Location: index.php');
     exit;
-}
-
-try {
-    $stmt = $pdo->prepare("INSERT INTO threads (title, content, category_id, user_id, created_at) VALUES (:title, :content, :category, :user, NOW())");
-    $stmt->execute([
-        'title' => $title,
-        'content' => $content,
-        'category' => $category_id,
-        'user' => $_SESSION['user_id']
-    ]);
-
-    echo json_encode(['status' => 'success', 'message' => 'สร้างกระทู้เรียบร้อย']);
-} catch (PDOException $e) {
-    echo json_encode(['status' => 'error', 'message' => 'เกิดข้อผิดพลาด: '.$e->getMessage()]);
 }
 ?>
+<form method="post">
+    Title: <input name="title" required><br>
+    Content: <textarea name="content" required></textarea><br>
+    Category: 
+    <select name="category">
+        <?php foreach($categories as $c): ?>
+            <option value="<?=$c['id']?>"><?=htmlspecialchars($c['name'])?></option>
+        <?php endforeach; ?>
+    </select><br>
+    <button type="submit">Create Thread</button>
+</form>
