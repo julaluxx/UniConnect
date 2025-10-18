@@ -1,16 +1,16 @@
 <?php
-// index.php (ส่วนบน)
+// index.php
 session_start();
-require 'db.php';
+require 'pdo.php'; // เรียกใช้ไฟล์เชื่อมต่อฐานข้อมูล
 
 // ดึง categories เพื่อแสดงใน sidebar / select
-$catStmt = $conn->query("SELECT id, name FROM categories ORDER BY name");
+$catStmt = $pdo->query("SELECT id, name FROM categories ORDER BY name");
 $categories = $catStmt->fetchAll();
 
 // ถ้าต้องการแสดง user profile
 $userData = null;
 if (isset($_SESSION['user_id'])) {
-    $stmt = $conn->prepare("SELECT id, username, email, bio, profile_image, role FROM users WHERE id = :id LIMIT 1");
+    $stmt = $pdo->prepare("SELECT id, username, email, bio, profile_image, role FROM users WHERE id = :id LIMIT 1");
     $stmt->execute(['id' => $_SESSION['user_id']]);
     $userData = $stmt->fetch();
 }
@@ -40,7 +40,6 @@ if (isset($_SESSION['user_id'])) {
   </div>
 </nav>
 
-<!-- ปรับให้ category list มาจาก DB -->
 <div class="container my-3">
   <div class="row">
     <div class="col-md-3">
@@ -76,8 +75,7 @@ if (isset($_SESSION['user_id'])) {
   </div>
 </div>
 
-<!-- ใส่ modals (login/register) ตามไฟล์เดิม -->
-<?php include 'modals.php'; // คุณสามารถแตกไฟล์ modal แยกเพื่อความสะดวก ?>
+<?php include 'modals.php'; // modal login/register ?>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="script.js"></script>

@@ -38,31 +38,68 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Create thread
-  const createThreadForm = document.getElementById('create-thread-form');
-  if (createThreadForm) {
-    createThreadForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const title = document.getElementById('threadTitle').value;
-      const content = document.getElementById('threadContent').value;
-      const category_id = document.getElementById('threadCategory').value;
-      const btn = document.getElementById('create-thread-btn');
-      btn.disabled = true;
-      const res = await postJSON('create_thread.php', { title, content, category_id });
-      btn.disabled = false;
-      const alertBox = document.getElementById('thread-alert');
-      if (res.status === 'success') {
-        alertBox.innerHTML = '<div class="alert alert-success">สร้างกระทู้เรียบร้อย</div>';
-        // clear form
-        document.getElementById('threadTitle').value = '';
-        document.getElementById('threadContent').value = '';
-        document.getElementById('threadCategory').value = '';
-        fetchThreads();
-      } else {
-        alertBox.innerHTML = `<div class="alert alert-danger">${res.message || 'Error'}</div>`;
+  document.addEventListener('DOMContentLoaded', () => {
+
+  const form = document.getElementById('create-thread-form');
+  const alertBox = document.getElementById('thread-alert');
+  const threadsContainer = document.getElementById('forum-threads');
+
+  // ฟังก์ชันโหลดกระทู้
+  function loadThreads() {
+    fetch('fetch_threads.php')
+      .then(res => res.json())
+      .then(data => {
+        threadsContainer.innerHTML = '';
+        if (data.length === 0) {
+          threadsContainer.innerHTML = '<p>ยังไม่มีกระทู้</p>';
+          return;
+        }
+        data.forEach(thread => {
+          const card = document.createElement('div');
+          card.className = 'card mb-3';
+          card.innerHTML = `
+            <div class="card-body">
+              <h5 class="card-title">${thread.title}</h5>
+              <h6 class="card-subtitle mb-2 text-muted">
+                ${thread.username} | ${thread.category} | ${thread.created_at}
+              </h6>
+              <p class="card-text">${thread.content.replace(/\n/g, '<br>')}</p>
+            </div>
+          `;
+          threadsContainer.appendChild(card);
+        });
+      });
+  }
+
+  // โหลดกระทู้ตอนเริ่มหน้า
+  loadThreads();
+
+  // ฟังก์ชันสร้างกระทู้
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append('title', document.getElementById('threadTitle').value);
+    formData.append('content', document.getElementById('threadContent').value);
+    formData.append('category_id', document.getElementById('threadCategory').value);
+
+    fetch('create_thread.php', {
+      method: 'POST',
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      alertBox.textContent = data.message;
+      alertBox.className = data.status === 'success' ? 'text-success' : 'text-danger';
+      if (data.status === 'success') {
+        form.reset();
+        loadThreads(); // โหลดกระทู้ใหม่ทันที
       }
     });
-  }
+  });
+
 });
+
 
 // helper
 async function postJSON(url, data) {
@@ -107,3 +144,5 @@ function escapeHtml(str) {
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'}[s];
   });
 }
+});
+

@@ -1,7 +1,7 @@
 <?php
 // register.php
 session_start();
-require 'db.php';
+require 'pdo.php';
 
 header('Content-Type: application/json');
 
