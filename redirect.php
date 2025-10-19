@@ -1,6 +1,7 @@
 <?php
 // dashboard_redirect.php
 session_start();
+require 'pdo.php';
 
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
     header('Location: login.php');
@@ -9,14 +10,14 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
 
 switch ($_SESSION['role']) {
     case 'admin':
-        header('Location: ../admin_page.php');
+        header('Location: ./admin/admin_page.php');
         break;
     case 'moderator':
-        header('Location: ../moder_page.php');
+        header('Location: ./modder/modder_page.php');
         break;
     case 'user':
     default:
-        header('Location: ../user_page.php');
+        header('Location: ./user/user_page.php');
         break;
 }
 exit;

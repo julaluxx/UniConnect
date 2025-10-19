@@ -2,11 +2,17 @@
 // index.php
 session_start();
 require 'pdo.php';
+
+// ดึงข้อมูลเธรด
 $stmt = $conn->query("SELECT t.*, c.name AS category_name, u.username FROM threads t
     JOIN categories c ON t.category_id=c.id
     JOIN users u ON t.author_id=u.id
     ORDER BY t.created_at DESC");
 $threads = $stmt->fetchAll();
+
+// ดึงข้อมูลหมวดหมู่
+$stmt = $conn->query("SELECT id, name FROM categories ORDER BY name ASC");
+$categories = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -28,7 +34,7 @@ $threads = $stmt->fetchAll();
     <a href="index.php" class="font-bold text-lg">UniConnect</a>
     <div>
       <?php if (isset($_SESSION['user_id'])): ?>
-        <span>Hi, <?= htmlspecialchars($_SESSION['role']) ?></span>
+        <span>Hi, <?= htmlspecialchars($_SESSION['role']) ?>, <?= htmlspecialchars($_SESSION['username']) ?>.</span>
         <a href="logout.php" class="btn btn-sm btn-secondary ml-2">Logout</a>
       <?php else: ?>
         <a href="login.php" class="btn btn-sm btn-secondary">Login</a>
@@ -45,7 +51,7 @@ $threads = $stmt->fetchAll();
         <button type="submit" class="btn btn-primary ml-2">Search</button>
       </form>
       <?php if (isset($_SESSION['user_id'])): ?>
-        <a href="create_thread.php" class="btn btn-success">Create Thread</a>
+        <a href="user/create_thread.php" class="btn btn-success">Create Thread</a>
       <?php endif; ?>
     </div>
 
@@ -57,46 +63,79 @@ $threads = $stmt->fetchAll();
       </ul>
     </div>
 
+    <main class="grid grid-cols-3 gap-4">
 
-    <?php foreach ($threads as $t): ?>
-      <div class="card bg-base-100 shadow-md mb-4">
-        <div class="card-body">
-          <h2 class="card-title"><?= htmlspecialchars($t['title']) ?></h2>
-          <p class="text-sm text-gray-500">By <?= htmlspecialchars($t['username']) ?> | Category:
-            <?= htmlspecialchars($t['category_name']) ?>
-          </p>
-          <p><?= nl2br(htmlspecialchars($t['content'])) ?></p>
-          <div class="mt-2 flex gap-2">
-            <a href="thread.php?id=<?= $t['id'] ?>" class="btn btn-sm btn-outline">View</a>
-            <?php if (isset($_SESSION['user_id'])): ?>
-              <a href="like_action.php?thread_id=<?= $t['id'] ?>" class="btn btn-sm btn-primary">Like</a>
-              <!-- Button modal -->
-              <label for="report-modal-<?= $t['id'] ?>" class="btn btn-sm btn-warning cursor-pointer">Report</label>
-            <?php endif; ?>
+      <!-- Sidebar -->
+      <div class="side-bar col-span-1">
+        <div id="profile-section" class="card bg-base-100 shadow-md mb-4">
+          <div class="card-body">
+            <h2 class="card-title">profile username</h2>
+            <img src="/assets/square_holder.png" alt="">
           </div>
         </div>
-      </div>
 
-      <!-- Modal for report -->
-      <input type="checkbox" id="report-modal-<?= $t['id'] ?>" class="modal-toggle">
-      <div class="modal">
-        <div class="modal-box">
-          <h3 class="font-bold text-lg">Report Thread: <?= htmlspecialchars($t['title']) ?></h3>
-          <form method="post" action="report_action.php" class="mt-4">
-            <input type="hidden" name="thread_id" value="<?= $t['id'] ?>">
-            <textarea name="description" class="textarea textarea-bordered w-full" placeholder="Describe the issue"
-              required></textarea>
-            <div class="modal-action">
-              <button type="submit" class="btn btn-error">Submit Report</button>
-              <label for="report-modal-<?= $t['id'] ?>" class="btn">Cancel</label>
-            </div>
-          </form>
+        <div id="category-section" class="card bg-base-100 shadow-md mb-4">
+          <ul class="card-body space-y-2">
+            <?php foreach ($categories as $category): ?>
+              <li>
+                <a href="category.php?id=<?= $category['id']; ?>" class="link link-hover text-primary">
+                  <?= htmlspecialchars($category['name']); ?>
+                </a>
+              </li>
+            <?php endforeach; ?>
+          </ul>
+        </div>
+
+        <div id="static-section" class="card bg-base-100 shadow-md mb-4">
+          <ul class="card-body">
+            <li>online: </li>
+            <li>thread: </li>
+            <li>comment: </li>
+          </ul>
         </div>
       </div>
-    <?php endforeach; ?>
-  </div>
 
+      <!-- Forum -->
+      <div id="forum" class="col-span-2">
+        <?php foreach ($threads as $t): ?>
+          <div class="card bg-base-100 shadow-md mb-4">
+            <div class="card-body">
+              <h2 class="card-title"><?= htmlspecialchars($t['title']) ?></h2>
+              <p class="text-sm text-gray-500">
+                By <?= htmlspecialchars($t['username']) ?> | Category: <?= htmlspecialchars($t['category_name']) ?>
+              </p>
+              <p><?= nl2br(htmlspecialchars($t['content'])) ?></p>
+              <div class="mt-2 flex gap-2">
+                <a href="thread.php?id=<?= $t['id'] ?>" class="btn btn-sm btn-outline">View</a>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                  <a href="like_action.php?thread_id=<?= $t['id'] ?>" class="btn btn-sm btn-primary">Like</a>
+                  <!-- Button modal -->
+                  <label for="report-modal-<?= $t['id'] ?>" class="btn btn-sm btn-warning cursor-pointer">Report</label>
+                <?php endif; ?>
+              </div>
+            </div>
+          </div>
 
+          <!-- Modal for report -->
+          <input type="checkbox" id="report-modal-<?= $t['id'] ?>" class="modal-toggle">
+          <div class="modal">
+            <div class="modal-box">
+              <h3 class="font-bold text-lg">Report Thread: <?= htmlspecialchars($t['title']) ?></h3>
+              <form method="post" action="report_action.php" class="mt-4">
+                <input type="hidden" name="thread_id" value="<?= $t['id'] ?>">
+                <textarea name="description" class="textarea textarea-bordered w-full" placeholder="Describe the issue"
+                  required></textarea>
+                <div class="modal-action">
+                  <button type="submit" class="btn btn-error">Submit Report</button>
+                  <label for="report-modal-<?= $t['id'] ?>" class="btn">Cancel</label>
+                </div>
+              </form>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      </div>
+
+    </main>
 
 </body>
 
