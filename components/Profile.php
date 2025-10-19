@@ -15,13 +15,13 @@ $avatar = htmlspecialchars($currentUser['avatar'] ?? 'https://via.placeholder.co
 $joinedAt = isset($currentUser['created_at']) ? date('d M Y', strtotime($currentUser['created_at'])) : 'ไม่ระบุ';
 ?>
 
-<div class="card bg-white p-4 shadow rounded">
+<div class="card bg-white p-4 mb-4 shadow rounded">
     <div class="flex flex-col items-center">
-        <!-- Avatar -->
-        <img src="<?php echo $avatar; ?>" alt="Avatar" class="w-24 h-24 rounded-full mb-4">
-
         <!-- Username -->
         <h3 class="card-title text-xl font-bold mb-1"><?php echo $username; ?></h3>
+        
+        <!-- Avatar -->
+        <img src="<?php echo $avatar; ?>" alt="Avatar" class="w-24 h-24 rounded-full mb-4">
 
         <!-- Email -->
         <p class="text-gray-500 mb-2"><?php echo $email; ?></p>

@@ -1,8 +1,8 @@
 <nav class="bg-primary text-primary-content p-4 flex justify-between">
     <a href="index.php" class="font-bold text-lg">UniConnect</a>
     <div>
-        <?php if (isset($_SESSION['user_id'])): ?>
-            <span>Hi, <?= htmlspecialchars($_SESSION['role']) ?>, <?= htmlspecialchars($_SESSION['username']) ?>.</span>
+        <?php if (isset($currentUser)): ?>
+            <span>Hi, <?= htmlspecialchars($currentUser['role'] ?? 'user') ?>, <?= htmlspecialchars($currentUser['username'] ?? 'ไม่ระบุ') ?>.</span>
             <a href="index.php?action=logout" class="btn btn-sm btn-secondary ml-2">Logout</a>
         <?php else: ?>
             <a href="index.php?action=login" class="btn btn-sm btn-secondary">Login</a>
