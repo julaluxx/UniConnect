@@ -1,6 +1,7 @@
 <?php
 session_start();
 require 'pdo.php';
+
 $thread_id = $_GET['id'] ?? 0;
 
 // ดึงกระทู้
@@ -24,43 +25,124 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['user_id'])) {
     exit;
 }
 ?>
-<h2><?= htmlspecialchars($thread['title']) ?></h2>
-<p>By <?= htmlspecialchars($thread['username']) ?> | Category: <?= htmlspecialchars($thread['category_name']) ?></p>
-<p><?= nl2br(htmlspecialchars($thread['content'])) ?></p>
 
-<?php if(isset($_SESSION['user_id'])): ?>
-    <a href="like_action.php?thread_id=<?=$thread['id']?>">Like/Unlike</a>
-<?php endif; ?>
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><?= htmlspecialchars($thread['title']) ?> - UniConnect</title>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
 
-<h3>Comments</h3>
-<?php foreach ($comments as $c): ?>
-    <div style="border-top:1px solid #ccc; padding:5px;">
-        <b><?= htmlspecialchars($c['username']) ?></b>: <?= nl2br(htmlspecialchars($c['content'])) ?>
+<body class="bg-gray-100 min-h-screen">
+
+  <!-- Navbar -->
+  <nav class="bg-primary text-primary-content p-4 flex justify-between">
+    <a href="index.php" class="font-bold text-lg">UniConnect</a>
+    <div>
+      <?php if (isset($_SESSION['user_id'])): ?>
+        <span>Hi, <?= htmlspecialchars($_SESSION['role']) ?></span>
+        <a href="logout.php" class="btn btn-sm btn-secondary ml-2">Logout</a>
+      <?php else: ?>
+        <a href="login.php" class="btn btn-sm btn-secondary">Login</a>
+        <a href="register.php" class="btn btn-sm btn-accent ml-2">Register</a>
+      <?php endif; ?>
     </div>
-<?php endforeach; ?>
+  </nav>
 
-<?php
-$stmt = $conn->prepare("SELECT COUNT(*) AS likes FROM likes WHERE thread_id=?");
-$stmt->execute([$thread['id']]);
-$like_count = $stmt->fetchColumn();
-echo "<p>Likes: $like_count</p>";
-?>
+  <div class="container mx-auto mt-6 px-4">
 
-<?php if (isset($_SESSION['user_id'])): ?>
-    <form method="post">
-        <textarea name="content" required></textarea><br>
-        <button type="submit">Add Comment</button>
-    </form>
-<?php else: ?>
-    <p><a href="login.php">Login</a> to comment</p>
-<?php endif; ?>
-<form method="post" action="report_action.php">
-    <input type="hidden" name="thread_id" value="<?= $thread['id'] ?>">
-    <textarea name="description" placeholder="Report this thread" required></textarea><br>
-    <button type="submit">Report</button>
-</form>
-<?php if ($_SESSION['user_id'] == $thread['author_id']): ?>
-    <a href="edit_thread.php?id=<?= $thread['id'] ?>">Edit</a> |
-    <a href="delete_thread.php?id=<?= $thread['id'] ?>" onclick="return confirm('Delete this thread?')">Delete</a>
-<?php endif; ?>
+    <!-- Breadcrumb -->
+    <div class="text-sm breadcrumbs mb-6">
+      <ul>
+        <li><a href="index.php">Home</a></li>
+        <li><?= htmlspecialchars($thread['category_name']) ?></li>
+        <li><?= htmlspecialchars($thread['title']) ?></li>
+      </ul>
+    </div>
+
+    <!-- Thread card -->
+    <div class="card bg-base-100 shadow-md mb-6">
+      <div class="card-body">
+        <h2 class="card-title text-xl"><?= htmlspecialchars($thread['title']) ?></h2>
+        <p class="text-sm text-gray-500 mb-2">
+          By <?= htmlspecialchars($thread['username']) ?> |
+          Category: <?= htmlspecialchars($thread['category_name']) ?>
+        </p>
+        <p class="mb-4"><?= nl2br(htmlspecialchars($thread['content'])) ?></p>
+
+        <!-- Likes & actions -->
+        <div class="flex items-center gap-4">
+          <p class="text-sm">👍 Likes:
+            <?php
+            $stmt = $conn->prepare("SELECT COUNT(*) FROM likes WHERE thread_id=?");
+            $stmt->execute([$thread['id']]);
+            echo $stmt->fetchColumn();
+            ?>
+          </p>
+          <?php if (isset($_SESSION['user_id'])): ?>
+            <a href="like_action.php?thread_id=<?= $thread['id'] ?>" class="btn btn-sm btn-primary">Like/Unlike</a>
+
+            <!-- Edit/Delete -->
+            <?php if ($_SESSION['user_id'] == $thread['author_id']): ?>
+              <a href="edit_thread.php?id=<?= $thread['id'] ?>" class="btn btn-sm btn-outline">Edit</a>
+              <a href="delete_thread.php?id=<?= $thread['id'] ?>"
+                class="btn btn-sm btn-error"
+                onclick="return confirm('Delete this thread?')">Delete</a>
+            <?php endif; ?>
+          <?php endif; ?>
+        </div>
+      </div>
+    </div>
+
+    <!-- Report form -->
+    <?php if (isset($_SESSION['user_id'])): ?>
+      <div class="card bg-base-100 shadow mb-6">
+        <div class="card-body">
+          <h3 class="card-title text-md">Report Thread</h3>
+          <form method="post" action="report_action.php">
+            <input type="hidden" name="thread_id" value="<?= $thread['id'] ?>">
+            <textarea name="description" placeholder="Describe the issue" class="textarea textarea-bordered w-full mb-2" required></textarea>
+            <button type="submit" class="btn btn-error btn-sm">Submit Report</button>
+          </form>
+        </div>
+      </div>
+    <?php endif; ?>
+
+    <!-- Comments -->
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold mb-3">💬 Comments</h3>
+      <?php foreach ($comments as $c): ?>
+        <div class="card bg-base-200 mb-3">
+          <div class="card-body py-3 px-4">
+            <p class="text-sm text-gray-600 font-semibold"><?= htmlspecialchars($c['username']) ?>:</p>
+            <p><?= nl2br(htmlspecialchars($c['content'])) ?></p>
+          </div>
+        </div>
+      <?php endforeach; ?>
+    </div>
+
+    <!-- Add comment form -->
+    <div class="mb-10">
+      <?php if (isset($_SESSION['user_id'])): ?>
+        <div class="card bg-base-100 shadow">
+          <div class="card-body">
+            <h3 class="card-title text-md">Add a Comment</h3>
+            <form method="post">
+              <textarea name="content" class="textarea textarea-bordered w-full mb-2" placeholder="Write your comment..." required></textarea>
+              <button type="submit" class="btn btn-success btn-sm">Post Comment</button>
+            </form>
+          </div>
+        </div>
+      <?php else: ?>
+        <p><a href="login.php" class="link link-primary">Login</a> to comment.</p>
+      <?php endif; ?>
+    </div>
+
+  </div>
+</body>
+
+</html>
