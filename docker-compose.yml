@@ -1,17 +1,12 @@
-version: "3.9"
+# docker-compose.yml
 
 services:
   xampp:
     image: tomsik68/xampp:latest
-    container_name: uniconnect_xampp
+    container_name: uc-server
+    privileged: true
     ports:
       - "8080:80"
-      - "3306:3306"
     volumes:
-      # - ~/Documents/UniConnect:/opt/lampp/htdocs/UniConnect:Z
-    environment:
-      MYSQL_ROOT_PASSWORD: uc_root_password
-      MYSQL_USER: uniconnect
-      MYSQL_PASSWORD: uc_password
-      MYSQL_DATABASE: uniconnect_db
+      - /workspaces/UniConnect:/opt/lampp/htdocs/UniConnect:Z
     restart: unless-stopped

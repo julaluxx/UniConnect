@@ -73,14 +73,6 @@ CREATE TABLE IF NOT EXISTS reports (
 INSERT IGNORE INTO categories (name) VALUES 
 ('General'), ('Academics'), ('Housing'), ('Jobs'), ('Events'), ('Lost & Found'), ('Buy & Sell');
 
--- ผู้ใช้เริ่มต้น (admin)
-INSERT IGNORE INTO users (id, username, email, password, role) VALUES
-(1, 'admin', 'admin@email.com', 'admin_pass', 'admin'),
-(2, 'nina42', 'nina@email.com', 'nina_pass', 'user'),
-(3, 'pong_it', 'pong@email.com', 'pong_pass', 'user'),
-(4, 'minty_mint', 'mint@email.com', 'mint_pass', 'moderator'),
-(5, 'jobhunter23', 'hunter@email.com', 'hunter_pass', 'user');
-
 -- เพิ่มข้อมูลเริ่มติ้นสำหรับ Thread
 INSERT IGNORE INTO threads (id, title, content, category_id, author_id, created_at, updated_at)
 VALUES
