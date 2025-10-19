@@ -48,6 +48,15 @@ $threads = $stmt->fetchAll();
       <?php endif; ?>
     </div>
 
+    <!-- Breadcrumb -->
+    <div class="text-sm breadcrumbs mb-6">
+      <ul>
+        <li><a href="index.php">Home</a></li>
+        <li>Forum</li>
+      </ul>
+    </div>
+
+
     <?php foreach ($threads as $t): ?>
       <div class="card bg-base-100 shadow-md mb-4">
         <div class="card-body">
