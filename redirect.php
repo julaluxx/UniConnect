@@ -10,14 +10,14 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
 
 switch ($_SESSION['role']) {
     case 'admin':
-        header('Location: ./admin/admin_page.php');
+        header('Location: index.php');
         break;
     case 'moderator':
-        header('Location: ./modder/modder_page.php');
+        header('Location: index.php');
         break;
     case 'user':
     default:
-        header('Location: ./user/user_page.php');
+        header('Location: index.php');
         break;
 }
 exit;

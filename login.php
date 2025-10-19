@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['role'] = $user['role'];
         $_SESSION['username'] = $user['username'];
-        header('Location: ../redirect.php');
+        header('Location: redirect.php');
         exit;
     } else {
         $error = "Invalid username or password";

@@ -18,8 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->execute([$username, $email, $password]);
         $_SESSION['user_id'] = $conn->lastInsertId();
         $_SESSION['role'] = 'user';
-        // header('Location: index.php');
-        header('Location: ./user/user_page.php');
+        // พอสมัครบัญชีเรียบร้อย ก็พาไปยัง index.php
+        header('Location: index.php');
         exit;
     }
 }
