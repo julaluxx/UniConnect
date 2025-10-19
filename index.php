@@ -5,14 +5,41 @@ require 'pdo.php';
 
 // ดึงข้อมูลเธรด
 $stmt = $conn->query("SELECT t.*, c.name AS category_name, u.username FROM threads t
-    JOIN categories c ON t.category_id=c.id
-    JOIN users u ON t.author_id=u.id
+    JOIN categories c ON t.category_id = c.id
+    JOIN users u ON t.author_id = u.id
     ORDER BY t.created_at DESC");
 $threads = $stmt->fetchAll();
+
+// ดึงข้อมูลผู้ใช้
+$stmt = $conn->prepare("SELECT username, bio, profile_image FROM users WHERE id = ?");
+$stmt->execute([$_SESSION['user_id']]);
+$user_data = $stmt->fetch();
+
+// ตรวจสอบว่ามีข้อมูลผู้ใช้หรือไม่
+if ($user_data) {
+  $username = htmlspecialchars($user_data['username']);
+  $bio = htmlspecialchars($user_data['bio']);
+  $profile_image = htmlspecialchars($user_data['profile_image']);
+} else {
+  // ถ้าข้อมูลผู้ใช้ไม่พบ
+  $username = 'Guest';
+  $bio = 'No bio available';
+  $profile_image = './assets/square_holder.png';  
+}
 
 // ดึงข้อมูลหมวดหมู่
 $stmt = $conn->query("SELECT id, name FROM categories ORDER BY name ASC");
 $categories = $stmt->fetchAll();
+
+// ดึงข้อมูลสถิติของเว็บบอร์ด
+$stmt = $conn->query("SELECT COUNT(id) FROM users");
+$users_count = $stmt->fetchColumn();
+
+$stmt = $conn->query("SELECT COUNT(id) FROM threads");
+$thread_count = $stmt->fetchColumn();
+
+$stmt = $conn->query("SELECT COUNT(id) FROM comments");
+$comment_count = $stmt->fetchColumn();
 ?>
 
 <!DOCTYPE html>
@@ -21,10 +48,8 @@ $categories = $stmt->fetchAll();
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-
   <title>UniConnect</title>
 </head>
 
@@ -69,8 +94,9 @@ $categories = $stmt->fetchAll();
       <div class="side-bar col-span-1">
         <div id="profile-section" class="card bg-base-100 shadow-md mb-4">
           <div class="card-body">
-            <h2 class="card-title">profile username</h2>
-            <img src="/assets/square_holder.png" alt="">
+            <h2 class="card-title"><?= $username ?></h2>
+            <img src="<?=$profile_image ?>" alt="Profile Image">
+            <p><?= $bio ?></p>
           </div>
         </div>
 
@@ -88,9 +114,9 @@ $categories = $stmt->fetchAll();
 
         <div id="static-section" class="card bg-base-100 shadow-md mb-4">
           <ul class="card-body">
-            <li>online: </li>
-            <li>thread: </li>
-            <li>comment: </li>
+            <li>online: <?= htmlspecialchars($users_count) ?></li>
+            <li>thread: <?= htmlspecialchars($thread_count) ?> </li>
+            <li>comment: <?= htmlspecialchars($comment_count) ?> </li>
           </ul>
         </div>
       </div>
