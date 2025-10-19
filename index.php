@@ -1,4 +1,5 @@
 <?php
+// index.php
 require 'data_layer.php';
 
 // สร้างอินสแตนซ์ของ DataLayer
@@ -65,6 +66,7 @@ $statistics = $data['statistics'];
 
         <!-- ThreadList Component -->
         <?php include 'components/ThreadList.php'; ?>
+
       </div>
     </main>
   </div>

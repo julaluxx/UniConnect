@@ -2,7 +2,10 @@
     <h3>หมวดหมู่</h3>
     <ul>
         <?php foreach ($categories as $category): ?>
-            <li><?php echo htmlspecialchars($category['name']); ?></li>
+            <li><a href="index.php?action=category&id=<?php echo $category['id']; ?>">
+                    <?php echo htmlspecialchars($category['name']); ?>
+                </a>
+            </li>
         <?php endforeach; ?>
     </ul>
 </div>
