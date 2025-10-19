@@ -6,7 +6,8 @@ require 'data_layer.php';
 $dataLayer = new DataLayer($conn);
 
 // ดึงข้อมูลทั้งหมด
-$data = $dataLayer->getAllData($_SESSION['user_id']);
+$userId = $_SESSION['user_id'] ?? null;
+$data = $dataLayer->getAllData($userId);
 
 // แยกข้อมูลไปใช้งาน
 $threads = $data['threads'];

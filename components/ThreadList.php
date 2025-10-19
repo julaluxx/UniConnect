@@ -28,7 +28,7 @@ if (isset($_GET['thread_id'])) {
             $comments = $conn->prepare("
       SELECT c.*, u.username 
       FROM comments c
-      JOIN users u ON c.user_id = u.id
+      JOIN users u ON c.author_id = u.id
       WHERE c.thread_id = ?
       ORDER BY c.created_at ASC
   ");
