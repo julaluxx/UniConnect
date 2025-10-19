@@ -5,6 +5,7 @@ if (!$currentThread)
     return;
 
 // --- ตรวจสอบว่าผู้ใช้กดไลค์แล้วหรือยัง ---
+$hasLiked = false; // ✅ กำหนด default
 if ($currentUser['role'] !== 'guest') {
     foreach ($likes as $l) {
         if (($l['thread_id'] ?? 0) == $currentThread['id'] && ($l['user_id'] ?? 0) == $currentUser['id']) {
@@ -13,7 +14,6 @@ if ($currentUser['role'] !== 'guest') {
         }
     }
 }
-
 
 // --- Thread Info ---
 $title = htmlspecialchars($currentThread['title'] ?? 'ไม่ระบุ');
@@ -69,11 +69,10 @@ $likeCount = count(array_filter($likes, fn($l) => ($l['thread_id'] ?? 0) == $cur
         <span class="text-gray-600 font-medium">❤️ <?= $likeCount; ?> ไลค์</span>
 
         <?php if ($currentUser['role'] !== 'guest'): ?>
-            <?php if ($hasLiked): ?>
-                <button class="btn btn-sm btn-disabled">กดไลค์แล้ว</button>
-            <?php else: ?>
-                <a href="?thread=<?= $currentThread['id']; ?>&action=like" class="btn btn-sm btn-primary">กดไลค์</a>
-            <?php endif; ?>
+            <a href="?thread=<?= $currentThread['id']; ?>&action=like-toggle"
+                class="btn btn-sm <?= $hasLiked ? 'btn-disabled' : 'btn-primary' ?>">
+                <?= $hasLiked ? 'กดไลค์แล้ว' : 'กดไลค์' ?>
+            </a>
             <a href="?thread=<?= $currentThread['id']; ?>&action=report" class="btn btn-sm btn-error">รายงาน</a>
         <?php endif; ?>
     </div>

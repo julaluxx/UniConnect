@@ -27,5 +27,10 @@ $role = htmlspecialchars($currentUser['role'] ?? 'user');
         <p class="text-gray-700 text-center mb-2"><?= $bio; ?></p>
         <p class="text-gray-400 text-sm mb-4">สมาชิกตั้งแต่: <?= $joinedAt; ?></p>
         <a href="?action=edit-profile" class="btn btn-outline btn-sm">แก้ไขโปรไฟล์</a>
+
+        <?php if ($currentUser['role'] === 'admin') { ?>
+            <a class="btn btn-outline btn-sm mt-2" href="?action=manage-thread">จัดการกระทู้</a>
+            <a class="btn btn-outline btn-sm mt-2" href="?action=manage-user">จัดการผู้ใช้</a>
+        <?php } ?>
     </div>
 </div>

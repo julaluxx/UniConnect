@@ -1,16 +1,7 @@
 <?php
-// index.php
-
 require 'data_layer.php';
 $dataLayer = new DataLayer($conn);
 $allData = $dataLayer->getAllTablesData();
-
-$searchQuery = trim($_GET['q'] ?? '');
-$searchResults = [];
-
-if ($searchQuery) {
-    $searchResults = $dataLayer->searchThreads($searchQuery);
-}
 
 $users = $allData['users'];
 $categories = $allData['categories'];
@@ -19,13 +10,12 @@ $comments = $allData['comments'];
 $likes = $allData['likes'];
 $reports = $allData['reports'];
 
-// ตรวจสอบ action ก่อน HTML
+// GET parameters
 $action = $_GET['action'] ?? '';
+$threadId = $_GET['thread'] ?? null;
+$userIdParam = $_GET['user'] ?? null;
 
 // ===== HANDLE CURRENT USER =====
-$userId = $_SESSION['user_id'] ?? null;
-
-// กำหนดค่า default user สำหรับ guest
 $currentUser = [
     'id' => 0,
     'username' => 'Guest',
@@ -33,30 +23,27 @@ $currentUser = [
     'role' => 'guest',
     'profile_image' => null,
 ];
-
-// ถ้ามี user_id จริง → ดึงข้อมูลจาก $users
-if ($userId) {
+if (isset($_SESSION['user_id'])) {
     foreach ($users as $user) {
-        if ($user['id'] == $userId) {
+        if ($user['id'] == $_SESSION['user_id']) {
             $currentUser = $user;
             break;
         }
     }
 }
 
-// Logout
+// ===== LOGOUT =====
 if ($action === 'logout') {
     session_destroy();
     header("Location: index.php");
     exit;
 }
 
-// Login form submit
+// ===== LOGIN =====
 $loginError = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
-
     $foundUser = null;
     foreach ($users as $user) {
         if ($user['email'] === $email) {
@@ -64,7 +51,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             break;
         }
     }
-
     if ($foundUser && password_verify($password, $foundUser['password'])) {
         $_SESSION['user_id'] = $foundUser['id'];
         $_SESSION['username'] = $foundUser['username'] ?? '';
@@ -76,16 +62,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     }
 }
 
-// ===== HANDLE THREAD ACTIONS =====
-$threadId = $_GET['thread'] ?? null;
-
+// ===== THREAD ACTIONS =====
 if ($threadId && $currentUser['role'] !== 'guest') {
 
-    // LIKE
-    if ($action === 'like') {
+    // Like toggle
+    if ($action === 'like-toggle') {
         $stmt = $conn->prepare("SELECT COUNT(*) FROM likes WHERE thread_id=? AND user_id=?");
         $stmt->execute([$threadId, $currentUser['id']]);
-        if ($stmt->fetchColumn() == 0) {
+        $hasLiked = $stmt->fetchColumn() > 0;
+        if ($hasLiked) {
+            $stmt = $conn->prepare("DELETE FROM likes WHERE thread_id=? AND user_id=?");
+            $stmt->execute([$threadId, $currentUser['id']]);
+        } else {
             $stmt = $conn->prepare("INSERT INTO likes (thread_id, user_id, created_at) VALUES (?, ?, NOW())");
             $stmt->execute([$threadId, $currentUser['id']]);
         }
@@ -93,23 +81,7 @@ if ($threadId && $currentUser['role'] !== 'guest') {
         exit;
     }
 
-    // UNLIKE
-    if ($action === 'unlike') {
-        $stmt = $conn->prepare("DELETE FROM likes WHERE thread_id=? AND user_id=?");
-        $stmt->execute([$threadId, $currentUser['id']]);
-        header("Location: ?thread=$threadId");
-        exit;
-    }
-
-    // REPORT (เหมือนเดิม)
-    if ($action === 'report') {
-        $stmt = $conn->prepare("SELECT COUNT(*) FROM reports WHERE thread_id=? AND reported_by=?");
-        $stmt->execute([$threadId, $currentUser['id']]);
-        $alreadyReported = $stmt->fetchColumn() > 0;
-        include 'components/Report.php';
-        exit;
-    }
-
+    // Report
     if ($action === 'confirm-report' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $conn->prepare("SELECT COUNT(*) FROM reports WHERE thread_id=? AND reported_by=?");
         $stmt->execute([$threadId, $currentUser['id']]);
@@ -122,7 +94,7 @@ if ($threadId && $currentUser['role'] !== 'guest') {
         exit;
     }
 
-    // COMMENTS (เหมือนเดิม)
+    // Comment
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment'])) {
         $content = trim($_POST['content'] ?? '');
         if ($content) {
@@ -132,17 +104,23 @@ if ($threadId && $currentUser['role'] !== 'guest') {
         header("Location: ?thread=$threadId");
         exit;
     }
+
+    // Delete thread (Admin)
+    if ($action === 'delete-thread' && $currentUser['role'] === 'admin') {
+        $stmt = $conn->prepare("DELETE FROM threads WHERE id=?");
+        $stmt->execute([$threadId]);
+        header("Location: ?action=manage-thread");
+        exit;
+    }
 }
 
-// ===== HANDLE CREATE NEW THREAD =====
+// ===== CREATE NEW THREAD =====
 if ($action === 'create-new-thread' && $currentUser['role'] !== 'guest') {
     $threadError = '';
-
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_thread'])) {
         $title = trim($_POST['title'] ?? '');
         $categoryId = $_POST['category_id'] ?? '';
         $content = trim($_POST['content'] ?? '');
-
         if (!$title || !$categoryId || !$content) {
             $threadError = 'กรุณากรอกข้อมูลให้ครบทุกช่อง';
         } else {
@@ -154,18 +132,15 @@ if ($action === 'create-new-thread' && $currentUser['role'] !== 'guest') {
     }
 }
 
-// ===== HANDLE EDIT PROFILE =====
+// ===== EDIT PROFILE =====
 if ($action === 'edit-profile' && $currentUser['role'] !== 'guest') {
     $editError = '';
-    $editSuccess = '';
-
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_profile'])) {
         $username = trim($_POST['username'] ?? '');
         $email = trim($_POST['email'] ?? '');
         $bio = trim($_POST['bio'] ?? '');
         $password = trim($_POST['password'] ?? '');
         $confirmPassword = trim($_POST['confirm_password'] ?? '');
-
         if (!$username || !$email) {
             $editError = 'กรุณากรอกชื่อและอีเมลให้ครบ';
         } elseif ($password && $password !== $confirmPassword) {
@@ -173,30 +148,49 @@ if ($action === 'edit-profile' && $currentUser['role'] !== 'guest') {
         } else {
             $params = [$username, $email, $bio, $currentUser['id']];
             $sql = "UPDATE users SET username=?, email=?, bio=? WHERE id=?";
-
             if ($password) {
                 $hashed = password_hash($password, PASSWORD_DEFAULT);
                 $sql = "UPDATE users SET username=?, email=?, bio=?, password=? WHERE id=?";
                 $params = [$username, $email, $bio, $hashed, $currentUser['id']];
             }
-
             $stmt = $conn->prepare($sql);
             $stmt->execute($params);
-
-            // อัปเดต session + currentUser
             $_SESSION['username'] = $username;
             $currentUser['username'] = $username;
             $currentUser['email'] = $email;
             $currentUser['bio'] = $bio;
-
-            // redirect ไปหน้าหลักทันที
             header("Location: index.php");
             exit;
         }
     }
 }
 
+// ===== ADMIN USER ACTIONS =====
+if ($currentUser['role'] === 'admin') {
+
+    // Delete user
+    if ($action === 'delete-user' && $userIdParam) {
+        $stmt = $conn->prepare("DELETE FROM users WHERE id=?");
+        $stmt->execute([$userIdParam]);
+        header("Location: ?action=manage-user");
+        exit;
+    }
+
+    // Edit user
+    if ($action === 'edit-user' && $userIdParam && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        $username = trim($_POST['username'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $role = trim($_POST['role'] ?? 'user');
+        if ($username && $email) {
+            $stmt = $conn->prepare("UPDATE users SET username=?, email=?, role=? WHERE id=?");
+            $stmt->execute([$username, $email, $role, $userIdParam]);
+            header("Location: ?action=manage-user");
+            exit;
+        }
+    }
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -209,19 +203,17 @@ if ($action === 'edit-profile' && $currentUser['role'] !== 'guest') {
 </head>
 
 <body class="bg-gray-100 min-h-screen">
-    <?php include 'components/Navbar.php'; ?>
 
+    <?php include 'components/Navbar.php'; ?>
     <div class="container mx-auto mt-6 p-4">
         <?php include 'components/TopBar.php'; ?>
-
         <main class="grid grid-cols-3 gap-4">
             <div class="side-bar col-span-1">
                 <?php include 'components/Profile.php'; ?>
                 <?php include 'components/CategoryList.php'; ?>
                 <?php include 'components/Statistic.php'; ?>
             </div>
-
-            <div id="forum" class="col-span-2">
+            <div id="dialogue" class="col-span-2">
                 <?php
                 if ($action === 'edit-profile' && $currentUser['role'] !== 'guest') {
                     include 'components/EditProfile.php';
@@ -233,7 +225,14 @@ if ($action === 'edit-profile' && $currentUser['role'] !== 'guest') {
                     include 'components/NewThread.php';
                 }
 
-                // แสดง ThreadList เสมอ (ยกเว้น edit-profile)
+                if ($action === 'manage-thread' && $currentUser['role'] === 'admin') {
+                    include 'components/ThreadManage.php';
+                }
+                if ($action === 'manage-user' && $currentUser['role'] === 'admin') {
+                    include 'components/UserManage.php';
+                }
+
+                // แสดง ThreadList เสมอ
                 if ($action !== 'edit-profile') {
                     include 'components/ThreadList.php';
                 }
