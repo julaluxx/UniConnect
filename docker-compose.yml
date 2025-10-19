@@ -9,7 +9,6 @@ services:
       - "3306:3306"
     volumes:
       # - ~/Documents/UniConnect:/opt/lampp/htdocs/UniConnect:Z
-      - ~/UniConnect:/opt/lampp/htdocs/UniConnect:Z
     environment:
       MYSQL_ROOT_PASSWORD: uc_root_password
       MYSQL_USER: uniconnect
