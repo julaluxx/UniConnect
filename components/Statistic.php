@@ -28,9 +28,5 @@ $totalReports = count($reports);
             <span>ไลค์ทั้งหมด:</span>
             <span class="font-semibold"><?= $totalLikes; ?></span>
         </li>
-        <li class="flex justify-between">
-            <span>รายงานทั้งหมด:</span>
-            <span class="font-semibold"><?= $totalReports; ?></span>
-        </li>
     </ul>
 </div>

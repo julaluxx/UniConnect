@@ -1,4 +1,6 @@
 <?php
+// ThreadList.php
+
 $categoryFilter = $_GET['category'] ?? null;
 $currentThreadId = $_GET['thread'] ?? null;
 

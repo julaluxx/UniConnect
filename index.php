@@ -1,4 +1,6 @@
 <?php
+// index.php
+
 require 'data_layer.php';
 $dataLayer = new DataLayer($conn);
 $allData = $dataLayer->getAllTablesData();
@@ -16,7 +18,7 @@ $action = $_GET['action'] ?? '';
 // ===== HANDLE CURRENT USER =====
 $userId = $_SESSION['user_id'] ?? null;
 
-// ✅ กำหนดค่า default user สำหรับ guest
+// กำหนดค่า default user สำหรับ guest
 $currentUser = [
     'id' => 0,
     'username' => 'Guest',
@@ -25,7 +27,7 @@ $currentUser = [
     'profile_image' => null,
 ];
 
-// ✅ ถ้ามี user_id จริง → ดึงข้อมูลจาก $users
+// ถ้ามี user_id จริง → ดึงข้อมูลจาก $users
 if ($userId) {
     foreach ($users as $user) {
         if ($user['id'] == $userId) {
