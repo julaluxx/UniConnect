@@ -1,4 +1,4 @@
-version: "3.9"
+# II-docker-compose.yml
 
 services:
   xampp:
@@ -9,9 +9,6 @@ services:
       - "8080:80"
     volumes:
       - /workspaces/UniConnect:/opt/lampp/htdocs/UniConnect:Z
-    environment:
-      MYSQL_ROOT_PASSWORD: uc_root_password
-      MYSQL_USER: uniconnect
-      MYSQL_PASSWORD: uc_password
-      MYSQL_DATABASE: uniconnect_db
+      - ./init-db.sh:/init-db.sh:Z
+    command: [ "bash", "/init-db.sh" ]
     restart: unless-stopped

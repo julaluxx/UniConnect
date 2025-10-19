@@ -9,4 +9,4 @@ In association of Web Development Lecture project, 2025.
 Commands:  
 
 เริ่มทำงานคอนเทนเนอร์ | docker compose up -d   
-นำเข้าฐานข้อมูล | mysql -u uniconnect -p uniconnect_db < uniconnect_db.sq  
+นำเข้าฐานข้อมูล | mysql -u uniconnect -p uniconnect_db < uniconnect_db.sql  
