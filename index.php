@@ -91,6 +91,9 @@ if ($userId) {
       </div>
     </main>
   </div>
+
+  <!-- Footer -->
+   <?php include 'components/Footer.php'; ?>
 </body>
 
 </html>
