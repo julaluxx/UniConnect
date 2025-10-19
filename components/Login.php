@@ -14,7 +14,7 @@
         </form>
 
         <p class="mt-4 text-sm text-center">
-            Don't have an account? <a href="register.php" class="link link-primary">Register here</a>
+            Don't have an account? <a href="index.php?action=register" class="link link-primary">Register here</a>
         </p>
     </div>
 </div>

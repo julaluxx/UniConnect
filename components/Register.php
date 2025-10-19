@@ -1,4 +1,4 @@
-<div class="card bg-base-100 shadow-md">
+<div class="card bg-base-100 shadow-md mb-4">
     <div class="card-body">
         <h2 class="card-title text-xl mb-4">Register</h2>
 
@@ -8,7 +8,7 @@
             </div>
         <?php endif; ?>
 
-        <form method="post" class="space-y-4">
+        <form method="post" action="register_handler.php" class="space-y-4">
             <div>
                 <label class="label">
                     <span class="label-text">Username</span>
@@ -34,7 +34,7 @@
         </form>
 
         <p class="mt-4 text-sm text-center">
-            Already have an account? <a href="login.php" class="link link-primary">Login here</a>
+            Already have an account? <a href="index.php?action=login" class="link link-primary">Login here</a>
         </p>
     </div>
 </div>

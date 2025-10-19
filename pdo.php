@@ -16,7 +16,7 @@ $options = [
 try {
     $conn = new PDO($dsn, $user, $pass, $options);
 } catch (PDOException $e) {
-    error_log("DB Connection failed: " . $e->getMessage()); // ซ่อนไม่ให้ user เห็น
+    error_log("DB Connection failed: " . $e->getMessage()); 
     die("Internal Server Error. Please try again later.");
 }
 ?>

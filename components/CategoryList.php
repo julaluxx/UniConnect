@@ -1,11 +1,8 @@
-<div id="category-section" class="card bg-base-100 shadow-md mb-4">
-    <ul class="card-body space-y-2">
+<div class="category-list card bg-base-100 shadow-md p-4 mb-4">
+    <h3>หมวดหมู่</h3>
+    <ul>
         <?php foreach ($categories as $category): ?>
-            <li>
-                <a href="category.php?id=<?= $category['id']; ?>" class="link link-hover text-primary">
-                    <?= htmlspecialchars($category['name']); ?>
-                </a>
-            </li>
+            <li><?php echo htmlspecialchars($category['name']); ?></li>
         <?php endforeach; ?>
     </ul>
 </div>
