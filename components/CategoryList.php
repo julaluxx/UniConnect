@@ -12,7 +12,10 @@ if (empty($categories)) {
 ?>
 
 <div class="card bg-white p-4 shadow rounded mb-4">
-    <h3 class="card-title mb-2 text-lg font-bold">หมวดหมู่</h3>
+    <div class="grid-cols-2 flex justify-between">
+        <h3 class="card-title mb-2 text-lg font-bold">หมวดหมู่</h3>
+        <a href="./index.php">ล้าง</a>
+    </div>
     <ul class="menu menu-vertical w-full">
         <?php foreach ($categories as $category): ?>
             <?php
