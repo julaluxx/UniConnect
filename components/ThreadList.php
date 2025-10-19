@@ -1,52 +1,60 @@
 <?php
 // components/ThreadList.php
 
-if (empty($threads)) {
-    echo '<div class="card bg-white p-4 shadow rounded">';
-    echo '<p class="text-gray-500 text-center">ยังไม่มีกระทู้</p>';
-    echo '</div>';
-    return;
-}
+$categoryFilter = $_GET['category'] ?? null;
+$currentThreadId = $_GET['thread'] ?? null;
 
-// สร้าง array lookup สำหรับ user และ category
+// สร้าง lookup table
 $userMap = [];
 foreach ($users as $user) {
-    $userMap[$user['id']] = $user['username'] ?? 'ไม่ระบุ';
+    $userMap[$user['id']] = $user;
 }
-
 $categoryMap = [];
 foreach ($categories as $cat) {
     $categoryMap[$cat['id']] = $cat['name'] ?? 'ไม่ระบุ';
 }
+
+// เลือก thread ปัจจุบัน
+$currentThread = null;
+if ($currentThreadId) {
+    foreach ($threads as $thread) {
+        if ($thread['id'] == $currentThreadId) {
+            $currentThread = $thread;
+            break;
+        }
+    }
+}
+
+// --- ถ้ามี thread ที่เลือก ให้แสดง ThreadDetail แทน ThreadList ---
+if ($currentThread) {
+    include 'ThreadDetail.php';
+    return; // stop ไม่ต้องแสดงรายการ threads
+}
+
+// --- ถ้าไม่มี thread ที่เลือก ให้แสดงรายการ threads ปกติ ---
+$displayThreads = [];
+foreach ($threads as $thread) {
+    if ($categoryFilter && $thread['category_id'] != $categoryFilter)
+        continue;
+    $displayThreads[] = $thread;
+}
 ?>
 
 <div class="space-y-4">
-    <?php foreach ($threads as $thread): ?>
+    <?php foreach ($displayThreads as $thread): ?>
         <?php
         $threadId = $thread['id'] ?? 0;
         $title = htmlspecialchars($thread['title'] ?? 'ไม่ระบุ');
         $authorId = $thread['user_id'] ?? null;
-        $authorName = $userMap[$authorId] ?? 'ไม่ระบุ';
-        $categoryId = $thread['category_id'] ?? null;
-        $categoryName = $categoryMap[$categoryId] ?? 'ไม่ระบุ';
+        $authorName = ($authorId && isset($userMap[$authorId])) ? $userMap[$authorId]['username'] : 'ไม่ระบุ';
+        $categoryName = $categoryMap[$thread['category_id']] ?? 'ไม่ระบุ';
         $createdAt = isset($thread['created_at']) ? date('d M Y', strtotime($thread['created_at'])) : 'ไม่ระบุ';
-
-        // นับจำนวนคอมเมนต์
-        $commentCount = 0;
-        foreach ($comments as $comment) {
-            if (($comment['thread_id'] ?? 0) == $threadId)
-                $commentCount++;
-        }
-
-        // นับจำนวนไลค์
-        $likeCount = 0;
-        foreach ($likes as $like) {
-            if (($like['thread_id'] ?? 0) == $threadId)
-                $likeCount++;
-        }
+        $commentCount = count(array_filter($comments, fn($c) => ($c['thread_id'] ?? 0) == $threadId));
+        $likeCount = count(array_filter($likes, fn($l) => ($l['thread_id'] ?? 0) == $threadId));
         ?>
         <div class="card bg-white p-4 shadow rounded hover:shadow-md transition">
-            <a href="?thread=<?php echo $threadId; ?>" class="text-lg font-semibold hover:text-blue-500">
+            <a href="?thread=<?php echo $threadId; ?><?php echo $categoryFilter ? '&category=' . $categoryFilter : ''; ?>"
+                class="text-lg font-semibold hover:text-blue-500">
                 <?php echo $title; ?>
             </a>
             <div class="flex justify-between text-gray-500 text-sm mt-1">
