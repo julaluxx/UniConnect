@@ -15,10 +15,26 @@ foreach ($categories as $cat) {
     $categoryMap[$cat['id']] = $cat['name'] ?? 'ไม่ระบุ';
 }
 
+// --- ถ้ามี search query ให้ใช้ searchResults แทน threads ปกติ ---
+if (!empty($searchQuery)) {
+    $displayThreads = $searchResults; // searchResults มาจาก index.php
+} else {
+    // --- กรองและเรียงกระทู้ตามหมวด ---
+    $displayThreads = [];
+    foreach ($threads as $thread) {
+        if ($categoryFilter && $thread['category_id'] != $categoryFilter)
+            continue;
+        $displayThreads[] = $thread;
+    }
+}
+
+// ✅ เรียงจากใหม่สุด → เก่าสุด
+usort($displayThreads, fn($a, $b) => ($b['id'] ?? 0) <=> ($a['id'] ?? 0));
+
 // --- เลือก thread ปัจจุบัน ---
 $currentThread = null;
 if ($currentThreadId) {
-    foreach ($threads as $thread) {
+    foreach ($displayThreads as $thread) {
         if ($thread['id'] == $currentThreadId) {
             $currentThread = $thread;
             break;
@@ -31,22 +47,17 @@ if ($currentThread) {
     include 'ThreadDetail.php';
     return;
 }
-
-// --- กรองและเรียงกระทู้ ---
-$displayThreads = [];
-foreach ($threads as $thread) {
-    if ($categoryFilter && $thread['category_id'] != $categoryFilter)
-        continue;
-    $displayThreads[] = $thread;
-}
-
-// ✅ เรียงจากใหม่สุด → เก่าสุด
-usort($displayThreads, fn($a, $b) => ($b['id'] ?? 0) <=> ($a['id'] ?? 0));
 ?>
 
 <div class="space-y-4">
     <?php if (empty($displayThreads)): ?>
-        <p class="text-gray-500">ยังไม่มีกระทู้ในหมวดนี้</p>
+        <p class="text-gray-500">
+            <?php if (!empty($searchQuery)): ?>
+                ไม่พบกระทู้ที่ตรงกับคำค้นหา "<?= htmlspecialchars($searchQuery) ?>"
+            <?php else: ?>
+                ยังไม่มีกระทู้ในหมวดนี้
+            <?php endif; ?>
+        </p>
     <?php endif; ?>
 
     <?php foreach ($displayThreads as $thread): ?>

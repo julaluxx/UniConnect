@@ -5,6 +5,13 @@ require 'data_layer.php';
 $dataLayer = new DataLayer($conn);
 $allData = $dataLayer->getAllTablesData();
 
+$searchQuery = trim($_GET['q'] ?? '');
+$searchResults = [];
+
+if ($searchQuery) {
+    $searchResults = $dataLayer->searchThreads($searchQuery);
+}
+
 $users = $allData['users'];
 $categories = $allData['categories'];
 $threads = $allData['threads'];
@@ -147,6 +154,48 @@ if ($action === 'create-new-thread' && $currentUser['role'] !== 'guest') {
     }
 }
 
+// ===== HANDLE EDIT PROFILE =====
+if ($action === 'edit-profile' && $currentUser['role'] !== 'guest') {
+    $editError = '';
+    $editSuccess = '';
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_profile'])) {
+        $username = trim($_POST['username'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $bio = trim($_POST['bio'] ?? '');
+        $password = trim($_POST['password'] ?? '');
+        $confirmPassword = trim($_POST['confirm_password'] ?? '');
+
+        if (!$username || !$email) {
+            $editError = 'กรุณากรอกชื่อและอีเมลให้ครบ';
+        } elseif ($password && $password !== $confirmPassword) {
+            $editError = 'รหัสผ่านไม่ตรงกัน';
+        } else {
+            $params = [$username, $email, $bio, $currentUser['id']];
+            $sql = "UPDATE users SET username=?, email=?, bio=? WHERE id=?";
+
+            if ($password) {
+                $hashed = password_hash($password, PASSWORD_DEFAULT);
+                $sql = "UPDATE users SET username=?, email=?, bio=?, password=? WHERE id=?";
+                $params = [$username, $email, $bio, $hashed, $currentUser['id']];
+            }
+
+            $stmt = $conn->prepare($sql);
+            $stmt->execute($params);
+
+            // อัปเดต session + currentUser
+            $_SESSION['username'] = $username;
+            $currentUser['username'] = $username;
+            $currentUser['email'] = $email;
+            $currentUser['bio'] = $bio;
+
+            // redirect ไปหน้าหลักทันที
+            header("Location: index.php");
+            exit;
+        }
+    }
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -174,20 +223,20 @@ if ($action === 'create-new-thread' && $currentUser['role'] !== 'guest') {
 
             <div id="forum" class="col-span-2">
                 <?php
-                // แสดง Login / Register form
-                if ($action === 'login' && $currentUser['role'] === 'guest') {
+                if ($action === 'edit-profile' && $currentUser['role'] !== 'guest') {
+                    include 'components/EditProfile.php';
+                } elseif ($action === 'login' && $currentUser['role'] === 'guest') {
                     include 'components/Login.php';
                 } elseif ($action === 'register' && $currentUser['role'] === 'guest') {
                     include 'components/Register.php';
-                }
-
-                // สร้างกระทู้ใหม่
-                if ($action === 'create-new-thread' && $currentUser['role'] !== 'guest') {
+                } elseif ($action === 'create-new-thread' && $currentUser['role'] !== 'guest') {
                     include 'components/NewThread.php';
                 }
 
-                // แสดง Thread list
-                include 'components/ThreadList.php';
+                // แสดง ThreadList เสมอ (ยกเว้น edit-profile)
+                if ($action !== 'edit-profile') {
+                    include 'components/ThreadList.php';
+                }
                 ?>
             </div>
         </main>
