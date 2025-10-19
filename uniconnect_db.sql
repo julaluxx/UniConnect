@@ -73,32 +73,33 @@ CREATE TABLE IF NOT EXISTS reports (
 INSERT IGNORE INTO categories (name) VALUES 
 ('General'), ('Academics'), ('Housing'), ('Jobs'), ('Events'), ('Lost & Found'), ('Buy & Sell');
 
+-- ผู้ใช้เริ่มต้น (admin)
+INSERT IGNORE INTO users (id, username, email, password, role) VALUES
+(1, 'admin', 'admin@email.com', 'admin_pass', 'admin'),
+(2, 'nina42', 'nina@email.com', 'nina_pass', 'user'),
+(3, 'pong_it', 'pong@email.com', 'pong_pass', 'user'),
+(4, 'minty_mint', 'mint@email.com', 'mint_pass', 'moderator'),
+(5, 'jobhunter23', 'hunter@email.com', 'hunter_pass', 'user');
+
 -- เพิ่มข้อมูลเริ่มติ้นสำหรับ Thread
-INSERT INTO threads (title, content, category_id, author_id, created_at, updated_at)
+INSERT IGNORE INTO threads (id, title, content, category_id, author_id, created_at, updated_at)
 VALUES
-('Python กับกาแฟยามเช้า',
+(1, 'Python กับกาแฟยามเช้า',
  'แชร์ประสบการณ์ตอนเขียน Python ตอนตีสามพร้อมกาแฟแก้วที่สามของวัน...',
  2, 4, '2025-10-15 08:32:10', '2025-10-15 08:32:10'),
 
-('AI จะมาแย่งงานจริงไหม?',
+(2, 'AI จะมาแย่งงานจริงไหม?',
  'มาคุยกันแบบตรงๆ ว่า AI แทนคนได้แค่ไหน แล้วเราควรทำตัวยังไงต่อดี',
  1, 2, '2025-10-16 14:05:44', '2025-10-16 14:05:44'),
 
-('สรุปเทคนิคอ่านหนังสือก่อนสอบ 1 คืน',
+(3, 'สรุปเทคนิคอ่านหนังสือก่อนสอบ 1 คืน',
  'รวมเทคนิคอ่านด่วนก่อนสอบ ทั้งแบบสายหวังรอดและสายยังไม่เปิดหนังสือเลย',
  3, 1, '2025-10-17 21:14:03', '2025-10-17 21:14:03'),
 
-('Linux สำหรับมือใหม่ที่ยังกลัว Terminal',
+(4, 'Linux สำหรับมือใหม่ที่ยังกลัว Terminal',
  'เริ่มต้นยังไงดีไม่ให้หลงทางกับ command line ที่เต็มไปด้วยอักษรขาวดำ',
  2, 5, '2025-10-18 09:12:28', '2025-10-18 09:12:28'),
 
-('รวมเว็บโหลดฟอนต์ฟรีที่ดีจนไม่น่าเชื่อ',
+(5, 'รวมเว็บโหลดฟอนต์ฟรีที่ดีจนไม่น่าเชื่อ',
  'เจอขุมทรัพย์ฟอนต์สวยๆ แจกฟรีถูกลิขสิทธิ์มาเลยอยากแบ่งปันกันหน่อย',
  4, 3, '2025-10-19 11:47:59', '2025-10-19 11:47:59');
-
--- ผู้ใช้เริ่มต้น (admin)
-INSERT IGNORE INTO users (username, email, password, role) VALUES 
-('admin', 'admin_uc@email.com', 'admin_password', 'admin');
-
--- คำสั่งสำหรับนำเข้าไฟล์นี้:
--- mysql -u uniconnect -p uniconnect_db < uniconnect_db.sql
