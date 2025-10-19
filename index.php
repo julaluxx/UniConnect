@@ -64,6 +64,11 @@ $statistics = $data['statistics'];
         }
         ?>
 
+        <!-- New Thread -->
+        <?php if (isset($_SESSION['user_id'])): ?>
+          <?php include 'components/NewThread.php'; ?>
+        <?php endif; ?>
+
         <!-- ThreadList Component -->
         <?php include 'components/ThreadList.php'; ?>
 

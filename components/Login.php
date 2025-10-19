@@ -1,39 +1,39 @@
 <?php
-// components/Login.php
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
+    $username = trim($_POST['username']);
+    $password = trim($_POST['password']);
+
+    $stmt = $conn->prepare("SELECT * FROM users WHERE username = ?");
+    $stmt->execute([$username]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($user && password_verify($password, $user['password'])) {
+        $_SESSION['user_id'] = $user['id'];
+        header("Location: index.php");
+        exit;
+    } else {
+        $error = "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+    }
+}
 ?>
 
-<div class="card bg-base-100 shadow-xl p-6 mb-4">
-    <h2 class="text-2xl font-bold mb-4">ล็อกอิน</h2>
-    
-    <?php if (isset($_SESSION['error'])): ?>
-        <div class="alert alert-error">
-            <?php 
-            echo htmlspecialchars($_SESSION['error']); 
-            unset($_SESSION['error']);
-            ?>
-        </div>
+<div class="bg-white shadow-md rounded p-6 mb-4">
+    <h2 class="text-xl font-semibold mb-4">เข้าสู่ระบบ</h2>
+    <?php if (!empty($error)): ?>
+        <div class="text-red-500 mb-3"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
-
-    <form action="auth.php?action=login" method="POST" class="space-y-4">
-        <div class="form-control">
-            <label class="label" for="username">
-                <span class="label-text">ชื่อผู้ใช้</span>
-            </label>
-            <input type="text" id="username" name="username" class="input input-bordered" required>
+    <form method="POST">
+        <div class="mb-3">
+            <label class="block mb-1">ชื่อผู้ใช้</label>
+            <input type="text" name="username" required class="input input-bordered w-full" />
         </div>
-        <div class="form-control">
-            <label class="label" for="password">
-                <span class="label-text">รหัสผ่าน</span>
-            </label>
-            <input type="password" id="password" name="password" class="input input-bordered" required>
+        <div class="mb-3">
+            <label class="block mb-1">รหัสผ่าน</label>
+            <input type="password" name="password" required class="input input-bordered w-full" />
         </div>
-        <div class="form-control mt-6">
-            <button type="submit" class="btn btn-primary">ล็อกอิน</button>
-        </div>
+        <button type="submit" name="login" class="btn btn-primary w-full">เข้าสู่ระบบ</button>
     </form>
-    
-    <p class="mt-4">
-        ยังไม่มีบัญชี? 
-        <a href="?action=register" class="link link-primary">ลงทะเบียน</a>
+    <p class="text-sm text-center mt-3">
+        ยังไม่มีบัญชี? <a href="index.php?action=register" class="text-blue-600">สมัครสมาชิก</a>
     </p>
 </div>

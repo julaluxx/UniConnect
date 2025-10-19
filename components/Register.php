@@ -1,51 +1,44 @@
 <?php
-// components/Register.php
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
+    $username = trim($_POST['username']);
+    $password = password_hash(trim($_POST['password']), PASSWORD_DEFAULT);
+    $bio = trim($_POST['bio'] ?? '');
+
+    $stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
+    $stmt->execute([$username]);
+
+    if ($stmt->fetch()) {
+        $error = "ชื่อผู้ใช้นี้ถูกใช้ไปแล้ว";
+    } else {
+        $stmt = $conn->prepare("INSERT INTO users (username, password, bio) VALUES (?, ?, ?)");
+        $stmt->execute([$username, $password, $bio]);
+        header("Location: index.php?action=login");
+        exit;
+    }
+}
 ?>
 
-<div class="card bg-base-100 shadow-xl p-6 mb-4">
-    <h2 class="text-2xl font-bold mb-4">ลงทะเบียน</h2>
-    
-    <?php if (isset($_SESSION['error'])): ?>
-        <div class="alert alert-error">
-            <?php 
-            echo htmlspecialchars($_SESSION['error']); 
-            unset($_SESSION['error']);
-            ?>
-        </div>
+<div class="bg-white shadow-md rounded p-6 mb-4">
+    <h2 class="text-xl font-semibold mb-4">สมัครสมาชิก</h2>
+    <?php if (!empty($error)): ?>
+        <div class="text-red-500 mb-3"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
-
-    <form action="auth.php?action=register" method="POST" class="space-y-4">
-        <div class="form-control">
-            <label class="label" for="username">
-                <span class="label-text">ชื่อผู้ใช้</span>
-            </label>
-            <input type="text" id="username" name="username" class="input input-bordered" required>
+    <form method="POST">
+        <div class="mb-3">
+            <label class="block mb-1">ชื่อผู้ใช้</label>
+            <input type="text" name="username" required class="input input-bordered w-full" />
         </div>
-        <div class="form-control">
-            <label class="label" for="password">
-                <span class="label-text">รหัสผ่าน</span>
-            </label>
-            <input type="password" id="password" name="password" class="input input-bordered" required>
+        <div class="mb-3">
+            <label class="block mb-1">รหัสผ่าน</label>
+            <input type="password" name="password" required class="input input-bordered w-full" />
         </div>
-        <div class="form-control">
-            <label class="label" for="confirm_password">
-                <span class="label-text">ยืนยันรหัสผ่าน</span>
-            </label>
-            <input type="password" id="confirm_password" name="confirm_password" class="input input-bordered" required>
+        <div class="mb-3">
+            <label class="block mb-1">คำแนะนำตัว (ไม่บังคับ)</label>
+            <textarea name="bio" class="textarea textarea-bordered w-full"></textarea>
         </div>
-        <div class="form-control">
-            <label class="label" for="bio">
-                <span class="label-text">ประวัติโดยย่อ</span>
-            </label>
-            <textarea id="bio" name="bio" class="textarea textarea-bordered" placeholder="บอกเล่าเกี่ยวกับตัวคุณ"></textarea>
-        </div>
-        <div class="form-control mt-6">
-            <button type="submit" class="btn btn-primary">ลงทะเบียน</button>
-        </div>
+        <button type="submit" name="register" class="btn btn-success w-full">สมัครสมาชิก</button>
     </form>
-    
-    <p class="mt-4">
-        มีบัญชีแล้ว? 
-        <a href="?action=login" class="link link-primary">ล็อกอิน</a>
+    <p class="text-sm text-center mt-3">
+        มีบัญชีแล้ว? <a href="index.php?action=login" class="text-blue-600">เข้าสู่ระบบ</a>
     </p>
 </div>
