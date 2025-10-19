@@ -5,15 +5,29 @@ require 'data_layer.php';
 // สร้างอินสแตนซ์ของ DataLayer
 $dataLayer = new DataLayer($conn);
 
-// ดึงข้อมูลทั้งหมด
-$userId = $_SESSION['user_id'] ?? null;
-$data = $dataLayer->getAllData($userId);
+// ดึงข้อมูลทั้งหมดจากฐานข้อมูล
+$allData = $dataLayer->getAllTablesData();
 
-// แยกข้อมูลไปใช้งาน
-$threads = $data['threads'];
-$user_data = $data['user'];
-$categories = $data['categories'];
-$statistics = $data['statistics'];
+// แยกเก็บข้อมูลแต่ละตารางไว้ในตัวแปรเฉพาะ
+$users = $allData['users'] ?? [];
+$categories = $allData['categories'] ?? [];
+$threads = $allData['threads'] ?? [];
+$comments = $allData['comments'] ?? [];
+$likes = $allData['likes'] ?? [];
+$reports = $allData['reports'] ?? [];
+
+// เก็บ user ที่ login อยู่ (ถ้ามี)
+$userId = $_SESSION['user_id'] ?? null;
+$currentUser = null;
+if ($userId) {
+  // ค้นหาข้อมูล user จาก $users
+  foreach ($users as $user) {
+    if ($user['id'] == $userId) {
+      $currentUser = $user;
+      break;
+    }
+  }
+}
 ?>
 
 <!DOCTYPE html>
@@ -56,23 +70,24 @@ $statistics = $data['statistics'];
       <!-- Forum -->
       <div id="forum" class="col-span-2">
         <?php
-        if (isset($_GET['action']) && $_GET['action'] === 'login') {
+        // จัดการ action login/register/logout
+        $action = $_GET['action'] ?? '';
+        if ($action === 'login') {
           include 'components/Login.php';
-        } elseif (isset($_GET['action']) && $_GET['action'] === 'register') {
+        } elseif ($action === 'register') {
           include 'components/Register.php';
-        } elseif (isset($_GET['action']) && $_GET['action'] === 'logout') {
+        } elseif ($action === 'logout') {
           include 'components/Logout.php';
         }
         ?>
 
         <!-- New Thread -->
-        <?php if (isset($_SESSION['user_id'])): ?>
+        <?php if ($currentUser): ?>
           <?php include 'components/NewThread.php'; ?>
         <?php endif; ?>
 
         <!-- ThreadList Component -->
         <?php include 'components/ThreadList.php'; ?>
-
       </div>
     </main>
   </div>

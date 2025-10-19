@@ -1,5 +1,36 @@
-<div class="statistics card bg-base-100 shadow-md p-4 mb-4">
-    <p>จำนวนผู้ใช้: <?php echo $statistics['users_count']; ?></p>
-    <p>จำนวนกระทู้: <?php echo $statistics['thread_count']; ?></p>
-    <p>จำนวนความคิดเห็น: <?php echo $statistics['comment_count']; ?></p>
+<?php
+// components/Statistic.php
+
+// คำนวณสถิติ
+$totalUsers = count($users);
+$totalThreads = count($threads);
+$totalComments = count($comments);
+$totalLikes = count($likes);
+$totalReports = count($reports);
+?>
+
+<div class="card bg-white p-4 shadow rounded mt-4">
+    <h3 class="card-title mb-2 text-lg font-bold">สถิติ</h3>
+    <ul class="space-y-2 text-gray-700">
+        <li class="flex justify-between">
+            <span>ผู้ใช้ทั้งหมด:</span>
+            <span class="font-semibold"><?php echo $totalUsers; ?></span>
+        </li>
+        <li class="flex justify-between">
+            <span>กระทู้ทั้งหมด:</span>
+            <span class="font-semibold"><?php echo $totalThreads; ?></span>
+        </li>
+        <li class="flex justify-between">
+            <span>คอมเมนต์ทั้งหมด:</span>
+            <span class="font-semibold"><?php echo $totalComments; ?></span>
+        </li>
+        <li class="flex justify-between">
+            <span>ไลค์ทั้งหมด:</span>
+            <span class="font-semibold"><?php echo $totalLikes; ?></span>
+        </li>
+        <li class="flex justify-between">
+            <span>รายงานทั้งหมด:</span>
+            <span class="font-semibold"><?php echo $totalReports; ?></span>
+        </li>
+    </ul>
 </div>
