@@ -1,4 +1,5 @@
 <?php
+// report_action.php
 session_start();
 require 'pdo.php';
 if(!isset($_SESSION['user_id']) || !isset($_POST['thread_id']) || !isset($_POST['description'])) exit;

@@ -1,4 +1,5 @@
 <?php
+// like_action.php
 session_start();
 require 'pdo.php';
 if(!isset($_SESSION['user_id']) || !isset($_GET['thread_id'])) exit;

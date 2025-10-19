@@ -1,4 +1,5 @@
 <?php
+// create_thread.php
 session_start();
 require 'pdo.php';
 if (!isset($_SESSION['user_id'])) {

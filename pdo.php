@@ -1,4 +1,5 @@
 <?php
+// pdo.php
 $host = 'localhost';
 $db   = 'uniconnect_db';
 $user = 'root';

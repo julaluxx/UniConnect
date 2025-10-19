@@ -1,4 +1,5 @@
 <?php
+// delete_thread.php
 session_start();
 require 'pdo.php';
 $thread_id = $_GET['id'] ?? 0;

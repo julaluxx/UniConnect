@@ -1,4 +1,5 @@
 <?php
+// fetch_threads.php
 require 'pdo.php';
 header('Content-Type: application/json');
 

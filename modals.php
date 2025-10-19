@@ -1,4 +1,5 @@
 <!-- modals.php -->
+ 
 <!-- Login Modal -->
 <div class="modal fade" id="loginModal" tabindex="-1">
   <div class="modal-dialog">

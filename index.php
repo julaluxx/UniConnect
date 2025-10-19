@@ -1,4 +1,5 @@
 <?php
+// index.php
 session_start();
 require 'pdo.php';
 $stmt = $conn->query("SELECT t.*, c.name AS category_name, u.username FROM threads t

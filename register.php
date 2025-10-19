@@ -1,4 +1,5 @@
 <?php
+// register.php
 session_start();
 require 'pdo.php';
 
