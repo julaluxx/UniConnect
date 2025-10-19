@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     bio TEXT,
     role ENUM('user', 'moderator', 'admin') DEFAULT 'user',
-    profile_image VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

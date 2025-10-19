@@ -1,10 +1,10 @@
 <?php
 // ThreadDetail.php
 
-if (!$currentThread) return;
+if (!$currentThread)
+    return;
 
 // --- ตรวจสอบว่าผู้ใช้กดไลค์แล้วหรือยัง ---
-$hasLiked = false;
 if ($currentUser['role'] !== 'guest') {
     foreach ($likes as $l) {
         if (($l['thread_id'] ?? 0) == $currentThread['id'] && ($l['user_id'] ?? 0) == $currentUser['id']) {
@@ -13,6 +13,7 @@ if ($currentUser['role'] !== 'guest') {
         }
     }
 }
+
 
 // --- Thread Info ---
 $title = htmlspecialchars($currentThread['title'] ?? 'ไม่ระบุ');
@@ -86,7 +87,8 @@ $likeCount = count(array_filter($likes, fn($l) => ($l['thread_id'] ?? 0) == $cur
                 <p class="text-red-500 mb-2"><?= htmlspecialchars($commentError); ?></p>
             <?php endif; ?>
             <form method="POST" class="mb-6">
-                <textarea name="content" placeholder="เขียนคอมเมนต์..." class="textarea w-full mb-2 textarea-bordered" required></textarea>
+                <textarea name="content" placeholder="เขียนคอมเมนต์..." class="textarea w-full mb-2 textarea-bordered"
+                    required></textarea>
                 <button type="submit" name="comment" class="btn btn-primary">โพสต์คอมเมนต์</button>
             </form>
         <?php else: ?>
@@ -123,4 +125,17 @@ $likeCount = count(array_filter($likes, fn($l) => ($l['thread_id'] ?? 0) == $cur
             </div>
         <?php endif; ?>
     </div>
+
+    <?php
+    // REPORT (show form)
+    if ($action === 'report' && $currentUser['role'] !== 'guest') {
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM reports WHERE thread_id=? AND reported_by=?");
+        $stmt->execute([$threadId, $currentUser['id']]);
+        $alreadyReported = $stmt->fetchColumn() > 0;
+
+        include 'components/Report.php';
+        exit;
+    }
+    ?>
+
 </div>

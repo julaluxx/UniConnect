@@ -54,7 +54,6 @@ class DataLayer
             'password'      => $u['password'] ?? '',
             'bio'           => $u['bio'] ?? '',
             'role'          => $u['role'] ?? 'user',
-            'profile_image' => $u['profile_image'] ?? null,
             'created_at'    => $u['created_at'] ?? null,
         ], $data);
     }
