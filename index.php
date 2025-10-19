@@ -1,21 +1,39 @@
 <?php
-// index.php
 require 'data_layer.php';
-
-// สร้างอินสแตนซ์ของ DataLayer
 $dataLayer = new DataLayer($conn);
-
-// ดึงข้อมูลทั้งหมดจากฐานข้อมูล
 $allData = $dataLayer->getAllTablesData();
-$users = $allData['users'] ?? [];
-$categories = $allData['categories'] ?? [];
-$threads = $allData['threads'] ?? [];
-$comments = $allData['comments'] ?? [];
-$likes = $allData['likes'] ?? [];
-$reports = $allData['reports'] ?? [];
+
+$users      = $allData['users'];
+$categories = $allData['categories'];
+$threads    = $allData['threads'];
+$comments   = $allData['comments'];
+$likes      = $allData['likes'];
+$reports    = $allData['reports'];
 
 // ตรวจสอบ action ก่อน HTML
 $action = $_GET['action'] ?? '';
+
+// ===== HANDLE CURRENT USER =====
+$userId = $_SESSION['user_id'] ?? null;
+
+// ✅ กำหนดค่า default user สำหรับ guest
+$currentUser = [
+    'id' => 0,
+    'username' => 'Guest',
+    'email' => '',
+    'role' => 'guest',
+    'profile_image' => null,
+];
+
+// ✅ ถ้ามี user_id จริง → ดึงข้อมูลจาก $users
+if ($userId) {
+    foreach ($users as $user) {
+        if ($user['id'] == $userId) {
+            $currentUser = $user;
+            break;
+        }
+    }
+}
 
 // Logout
 if ($action === 'logout') {
@@ -49,14 +67,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     }
 }
 
-// เก็บ user ที่ login อยู่ (ถ้ามี)
-$userId = $_SESSION['user_id'] ?? null;
-$currentUser = null;
-if ($userId) {
-    foreach ($users as $user) {
-        if ($user['id'] == $userId) {
-            $currentUser = $user;
-            break;
+// ===== HANDLE THREAD ACTIONS =====
+$threadId = $_GET['thread'] ?? null;
+if ($currentUser['role'] !== 'guest' && $threadId) {
+    // LIKE
+    if ($action === 'like') {
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM likes WHERE thread_id=? AND user_id=?");
+        $stmt->execute([$threadId, $currentUser['id']]);
+        if ($stmt->fetchColumn() == 0) {
+            $stmt = $conn->prepare("INSERT INTO likes (thread_id, user_id, created_at) VALUES (?, ?, NOW())");
+            $stmt->execute([$threadId, $currentUser['id']]);
+        }
+        header("Location: ?thread=$threadId");
+        exit;
+    }
+
+    // REPORT
+    if ($action === 'report') {
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM reports WHERE thread_id=? AND reported_by=?");
+        $stmt->execute([$threadId, $currentUser['id']]);
+        if ($stmt->fetchColumn() == 0) {
+            $stmt = $conn->prepare("INSERT INTO reports (thread_id, reported_by, created_at) VALUES (?, ?, NOW())");
+            $stmt->execute([$threadId, $currentUser['id']]);
+        }
+        header("Location: ?thread=$threadId");
+        exit;
+    }
+
+    // COMMENT
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment'])) {
+        $content = trim($_POST['content'] ?? '');
+        if ($content) {
+            $stmt = $conn->prepare("INSERT INTO comments (thread_id, author_id, content, created_at) VALUES (?, ?, ?, NOW())");
+            $stmt->execute([$threadId, $currentUser['id'], $content]);
+            header("Location: ?thread=$threadId");
+            exit;
         }
     }
 }
@@ -86,14 +131,14 @@ if ($userId) {
       <div id="forum" class="col-span-2">
         <?php
         // แสดง Login / Register form
-        if ($action === 'login' && !$currentUser) {
+        if ($action === 'login' && $currentUser['role'] === 'guest') {
             include 'components/Login.php';
-        } elseif ($action === 'register' && !$currentUser) {
+        } elseif ($action === 'register' && $currentUser['role'] === 'guest') {
             include 'components/Register.php';
         }
 
         // สร้างกระทู้ใหม่
-        if ($action === 'create-new-thread' && $currentUser) {
+        if ($action === 'create-new-thread' && $currentUser['role'] !== 'guest') {
             include 'components/NewThread.php';
         }
 

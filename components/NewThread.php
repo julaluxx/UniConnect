@@ -31,9 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_thread'])) {
     <h3 class="text-lg font-bold mb-4">สร้างกระทู้ใหม่</h3>
 
     <?php if ($newThreadError): ?>
-        <p class="text-red-500 mb-2"><?php echo htmlspecialchars($newThreadError); ?></p>
+        <p class="text-red-500 mb-2"><?= htmlspecialchars($newThreadError); ?></p>
     <?php elseif ($newThreadSuccess): ?>
-        <p class="text-green-500 mb-2"><?php echo htmlspecialchars($newThreadSuccess); ?></p>
+        <p class="text-green-500 mb-2"><?= htmlspecialchars($newThreadSuccess); ?></p>
         <script>
             // หลังสร้างสำเร็จ ให้รีเฟรชหน้าเพจเพื่อกลับไปหน้า forum
             setTimeout(() => window.location.href = 'index.php', 1000);
@@ -41,11 +41,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_thread'])) {
     <?php endif; ?>
 
     <form method="POST">
-        <input type="hidden" name="user_id" value="<?php echo $currentUser['id']; ?>">
+        <input type="hidden" name="user_id" value="<?= $currentUser['id']; ?>">
 
         <div class="mb-4">
             <label class="block mb-1 font-semibold">หัวข้อกระทู้</label>
-            <input type="text" name="title" class="input w-full border" value="<?php echo htmlspecialchars($title ?? ''); ?>" required>
+            <input type="text" name="title" class="input w-full border" value="<?= htmlspecialchars($title ?? ''); ?>" required>
         </div>
 
         <div class="mb-4">
@@ -53,8 +53,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_thread'])) {
             <select name="category_id" class="select w-full border" required>
                 <option value="">-- เลือกหมวดหมู่ --</option>
                 <?php foreach ($categories as $cat): ?>
-                    <option value="<?php echo $cat['id']; ?>" <?php echo (isset($categoryId) && $categoryId == $cat['id']) ? 'selected' : ''; ?>>
-                        <?php echo htmlspecialchars($cat['name']); ?>
+                    <option value="<?= $cat['id']; ?>" <?= (isset($categoryId) && $categoryId == $cat['id']) ? 'selected' : ''; ?>>
+                        <?= htmlspecialchars($cat['name']); ?>
                     </option>
                 <?php endforeach; ?>
             </select>
@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_thread'])) {
 
         <div class="mb-4">
             <label class="block mb-1 font-semibold">เนื้อหากระทู้</label>
-            <textarea name="content" class="textarea w-full border" rows="5" required><?php echo htmlspecialchars($content ?? ''); ?></textarea>
+            <textarea name="content" class="textarea w-full border" rows="5" required><?= htmlspecialchars($content ?? ''); ?></textarea>
         </div>
 
         <button type="submit" name="new_thread" class="btn btn-primary">สร้างกระทู้</button>

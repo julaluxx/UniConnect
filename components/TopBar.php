@@ -13,14 +13,30 @@
     <!-- Breadcrumb -->
     <div class="breadcrumbs w-full">
         <ul>
-            <li>Home</li>
+            <li><a href="./index.php">Home</a></li>
             <li>Forum</li>
+            <?php if (isset($_GET['category'])): ?>
+                <?php
+                $categoryName = 'ไม่ระบุหมวดหมู่';
+                foreach ($categories as $category) {
+                    if ((int) $_GET['category'] === (int) $category['id']) {
+                        $categoryName = htmlspecialchars($category['name']);
+                        break;
+                    }
+                }
+                ?>
+                <li><?= $categoryName; ?></li>
+            <?php endif; ?>
         </ul>
     </div>
 
-    <!-- Create New Thread -->
-     <div class="button flex justify-end w-full">
-         <button class="btn btn-dash btn-primary"><a href="index.php?action=create-new-thread">สร้างกระทู้ใหม่</a></button>
-     </div>
 
+    <!-- Create New Thread -->
+    <div class="button flex justify-end w-full">
+        <?php if ($currentUser): ?>
+            <button class="btn btn-dash btn-primary">
+                <a href="?action=create-new-thread">สร้างกระทู้ใหม่</a>
+            </button>
+        <?php endif; ?>
+    </div>
 </div>

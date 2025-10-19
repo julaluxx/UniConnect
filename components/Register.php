@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     <h2 class="text-xl font-bold mb-4">สมัครสมาชิก</h2>
 
     <?php if ($registerError): ?>
-        <p class="text-red-500 mb-2"><?php echo $registerError; ?></p>
+        <p class="text-red-500 mb-2"><?= $registerError; ?></p>
     <?php endif; ?>
 
     <form method="POST">

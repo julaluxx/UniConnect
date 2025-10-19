@@ -1,8 +1,8 @@
-<div class="card bg-white p-6 mb-4 shadow rounded max-w-md mx-auto">
+<div class="card bg-white p-6 mb-4 shadow rounded">
     <h2 class="text-xl font-bold mb-4">เข้าสู่ระบบ</h2>
 
     <?php if (!empty($loginError)): ?>
-        <p class="text-red-500 mb-2"><?php echo htmlspecialchars($loginError); ?></p>
+        <p class="text-red-500 mb-2"><?= htmlspecialchars($loginError); ?></p>
     <?php endif; ?>
 
     <form method="POST">

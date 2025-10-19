@@ -3,10 +3,10 @@
     <div>
         <?php if (isset($currentUser)): ?>
             <span>Hi, <?= htmlspecialchars($currentUser['role'] ?? 'user') ?>, <?= htmlspecialchars($currentUser['username'] ?? 'ไม่ระบุ') ?>.</span>
-            <a href="index.php?action=logout" class="btn btn-sm btn-secondary ml-2">Logout</a>
+            <a href="?action=logout" class="btn btn-sm btn-secondary ml-2">Logout</a>
         <?php else: ?>
-            <a href="index.php?action=login" class="btn btn-sm btn-secondary">Login</a>
-            <a href="index.php?action=register" class="btn btn-sm btn-accent ml-2">Register</a>
+            <a href="?action=login" class="btn btn-sm btn-secondary">Login</a>
+            <a href="?action=register" class="btn btn-sm btn-accent ml-2">Register</a>
         <?php endif; ?>
     </div>
 </nav>

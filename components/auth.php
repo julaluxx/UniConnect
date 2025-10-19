@@ -17,7 +17,7 @@ if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     // ตรวจสอบว่าช่องไม่ว่าง
     if (empty($username) || empty($password)) {
         $_SESSION['error'] = 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน';
-        header('Location: index.php?action=login');
+        header('Location: ?action=login');
         exit();
     }
 
@@ -34,7 +34,7 @@ if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     } else {
         $_SESSION['error'] = 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
-        header('Location: index.php?action=login');
+        header('Location: ?action=login');
         exit();
     }
 } elseif ($action === 'register' && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -46,21 +46,21 @@ if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     // ตรวจสอบว่าช่องที่จำเป็นไม่ว่าง
     if (empty($username) || empty($password) || empty($confirm_password)) {
         $_SESSION['error'] = 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน';
-        header('Location: index.php?action=register');
+        header('Location: ?action=register');
         exit();
     }
 
     // ตรวจสอบว่ารหัสผ่านและยืนยันรหัสผ่านตรงกัน
     if ($password !== $confirm_password) {
         $_SESSION['error'] = 'รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน';
-        header('Location: index.php?action=register');
+        header('Location: ?action=register');
         exit();
     }
 
     // ตรวจสอบความยาวของชื่อผู้ใช้และรหัสผ่าน
     if (strlen($username) < 3 || strlen($password) < 6) {
         $_SESSION['error'] = 'ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร และรหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
-        header('Location: index.php?action=register');
+        header('Location: ?action=register');
         exit();
     }
 
@@ -69,7 +69,7 @@ if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute([$username]);
     if ($stmt->fetch()) {
         $_SESSION['error'] = 'ชื่อผู้ใช้นี้มีอยู่แล้ว';
-        header('Location: index.php?action=register');
+        header('Location: ?action=register');
         exit();
     }
 
@@ -93,7 +93,7 @@ if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     } else {
         $_SESSION['error'] = 'เกิดข้อผิดพลาดในการลงทะเบียน กรุณาลองใหม่';
-        header('Location: index.php?action=register');
+        header('Location: ?action=register');
         exit();
     }
 } else {

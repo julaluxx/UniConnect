@@ -14,23 +14,23 @@ $totalReports = count($reports);
     <ul class="space-y-2 text-gray-700">
         <li class="flex justify-between">
             <span>ผู้ใช้ทั้งหมด:</span>
-            <span class="font-semibold"><?php echo $totalUsers; ?></span>
+            <span class="font-semibold"><?= $totalUsers; ?></span>
         </li>
         <li class="flex justify-between">
             <span>กระทู้ทั้งหมด:</span>
-            <span class="font-semibold"><?php echo $totalThreads; ?></span>
+            <span class="font-semibold"><?= $totalThreads; ?></span>
         </li>
         <li class="flex justify-between">
             <span>คอมเมนต์ทั้งหมด:</span>
-            <span class="font-semibold"><?php echo $totalComments; ?></span>
+            <span class="font-semibold"><?= $totalComments; ?></span>
         </li>
         <li class="flex justify-between">
             <span>ไลค์ทั้งหมด:</span>
-            <span class="font-semibold"><?php echo $totalLikes; ?></span>
+            <span class="font-semibold"><?= $totalLikes; ?></span>
         </li>
         <li class="flex justify-between">
             <span>รายงานทั้งหมด:</span>
-            <span class="font-semibold"><?php echo $totalReports; ?></span>
+            <span class="font-semibold"><?= $totalReports; ?></span>
         </li>
     </ul>
 </div>
