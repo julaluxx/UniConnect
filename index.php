@@ -62,6 +62,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     }
 }
 
+// ===== REGISTER =====
+$registerError = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
+    $username = trim($_POST['username'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $confirmPassword = $_POST['confirm_password'] ?? '';
+
+    // ตรวจสอบข้อมูลว่าง
+    if (!$username || !$email || !$password || !$confirmPassword) {
+        $registerError = 'กรุณากรอกข้อมูลให้ครบทุกช่อง';
+    }
+    // ตรวจสอบรูปแบบอีเมล
+    elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $registerError = 'รูปแบบอีเมลไม่ถูกต้อง';
+    }
+    // ตรวจสอบรหัสผ่านตรงกัน
+    elseif ($password !== $confirmPassword) {
+        $registerError = 'รหัสผ่านไม่ตรงกัน';
+    } else {
+        try {
+            // ตรวจสอบว่าอีเมลนี้มีอยู่แล้วหรือยัง
+            $stmt = $conn->prepare("SELECT COUNT(*) FROM users WHERE email = ?");
+            $stmt->execute([$email]);
+            $exists = $stmt->fetchColumn();
+
+            if ($exists) {
+                $registerError = 'อีเมลนี้ถูกใช้แล้ว';
+            } else {
+                // แฮ็ชรหัสผ่าน
+                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+                // เพิ่มข้อมูลลงฐานข้อมูล (พร้อมเวลาและรูปโปรไฟล์เริ่มต้น)
+                $stmt = $conn->prepare("INSERT INTO users (username, email, password, role, created_at) VALUES (?, ?, ?, 'user', NOW())");
+                $stmt->execute([$username, $email, $hashedPassword]);
+
+                // ล็อกอินอัตโนมัติหลังสมัคร
+                $newUserId = $conn->lastInsertId();
+                $_SESSION['user_id'] = $newUserId;
+                $_SESSION['username'] = $username;
+                $_SESSION['role'] = 'user';
+
+                // กลับไปหน้าแรก
+                header("Location: index.php");
+                exit;
+            }
+        } catch (PDOException $e) {
+            $registerError = 'เกิดข้อผิดพลาดระหว่างการสมัครสมาชิก กรุณาลองใหม่อีกครั้ง';
+        }
+    }
+}
+
 // GET parameters
 $action = $_GET['action'] ?? '';
 $threadId = $_GET['thread'] ?? null;
