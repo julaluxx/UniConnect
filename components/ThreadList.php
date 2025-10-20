@@ -1,8 +1,9 @@
 <?php
-// ThreadList.php
+// components/ThreadList.php
 
 $categoryFilter = $_GET['category'] ?? null;
 $currentThreadId = $_GET['thread'] ?? null;
+$searchQuery = $_GET['q'] ?? ''; // รับคำค้นหาจาก GET parameter
 
 // --- สร้าง lookup table สำหรับชื่อผู้ใช้และหมวดหมู่ ---
 $userMap = [];
@@ -15,15 +16,16 @@ foreach ($categories as $cat) {
     $categoryMap[$cat['id']] = $cat['name'] ?? 'ไม่ระบุ';
 }
 
-// --- ถ้ามี search query ให้ใช้ searchResults แทน threads ปกติ ---
+// --- ถ้ามี search query ให้ใช้ filteredThreads จาก index.php ---
+$displayThreads = [];
 if (!empty($searchQuery)) {
-    $displayThreads = $searchResults; // searchResults มาจาก index.php
+    $displayThreads = $filteredThreads; // ใช้ filteredThreads ที่ส่งมาจาก index.php
 } else {
     // --- กรองและเรียงกระทู้ตามหมวด ---
-    $displayThreads = [];
     foreach ($threads as $thread) {
-        if ($categoryFilter && $thread['category_id'] != $categoryFilter)
+        if ($categoryFilter && $thread['category_id'] != $categoryFilter) {
             continue;
+        }
         $displayThreads[] = $thread;
     }
 }
@@ -50,10 +52,14 @@ if ($currentThread) {
 ?>
 
 <div class="space-y-4">
+    <?php if (!empty($searchQuery)): ?>
+        <p class="mb-4">ผลการค้นหาสำหรับ: <?= htmlspecialchars($searchQuery); ?></p>
+    <?php endif; ?>
+
     <?php if (empty($displayThreads)): ?>
         <p class="text-gray-500">
             <?php if (!empty($searchQuery)): ?>
-                ไม่พบกระทู้ที่ตรงกับคำค้นหา "<?= htmlspecialchars($searchQuery) ?>"
+                ไม่พบกระทู้ที่ตรงกับคำค้นหา "<?= htmlspecialchars($searchQuery); ?>"
             <?php else: ?>
                 ยังไม่มีกระทู้ในหมวดนี้
             <?php endif; ?>

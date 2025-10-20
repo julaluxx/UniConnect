@@ -62,6 +62,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     }
 }
 
+// GET parameters
+$action = $_GET['action'] ?? '';
+$threadId = $_GET['thread'] ?? null;
+$userIdParam = $_GET['user'] ?? null;
+$searchQuery = $_GET['q'] ?? ''; // เพิ่มตัวแปรสำหรับคำค้นหา
+
+// กรองกระทู้ตามคำค้นหา
+$filteredThreads = $threads; // เริ่มต้นด้วยกระทู้ทั้งหมด
+if ($searchQuery) {
+    $filteredThreads = array_filter($threads, function ($thread) use ($searchQuery) {
+        // ค้นหาคำใน title หรือ content ของกระทู้ (case-insensitive)
+        return stripos($thread['title'], $searchQuery) !== false ||
+            stripos($thread['content'], $searchQuery) !== false;
+    });
+}
+
 // ===== THREAD ACTIONS =====
 if ($threadId && $currentUser['role'] !== 'guest') {
 

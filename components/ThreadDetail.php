@@ -73,6 +73,7 @@ $likeCount = count(array_filter($likes, fn($l) => ($l['thread_id'] ?? 0) == $cur
                 class="btn btn-sm <?= $hasLiked ? 'btn-disabled' : 'btn-primary' ?>">
                 <?= $hasLiked ? 'กดไลค์แล้ว' : 'กดไลค์' ?>
             </a>
+            
             <a href="?thread=<?= $currentThread['id']; ?>&action=report" class="btn btn-sm btn-error">รายงาน</a>
         <?php endif; ?>
     </div>
