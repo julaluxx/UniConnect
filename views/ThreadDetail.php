@@ -1,21 +1,14 @@
 <?php
-$currentUser = $currentUser ?? ['role' => 'guest', 'id' => 0];
-$threadId = $threadId ?? null;
+$currentUser = $data['currentUser'] ?? ['role' => 'guest', 'id' => 0];
+$threadId = $data['threadId'] ?? null;
+$thread = $data['thread'] ?? null;
+$allData = $data['allData'] ?? ['threads' => [], 'users' => [], 'categories' => [], 'comments' => [], 'likes' => []];
+$likeCount = $data['likeCount'] ?? 0;
+$hasLiked = $data['hasLiked'] ?? false;
+$threadComments = $data['threadComments'] ?? [];
 
-// ฟังก์ชันช่วยค้นหากระทู้เดี่ยว
-function findThreadById($threads, $threadId)
-{
-    foreach ($threads as $thread) {
-        if ($thread['id'] == $threadId) {
-            return $thread;
-        }
-    }
-    return null;
-}
-
-// ฟังก์ชันช่วยค้นหาข้อมูลผู้ใช้และหมวดหมู่ (จาก ThreadList.php)
-function findUserById($users, $id)
-{
+// ฟังก์ชันช่วยค้นหาข้อมูลผู้ใช้และหมวดหมู่
+function findUserById($users, $id) {
     foreach ($users as $user) {
         if ($user['id'] == $id) {
             return $user;
@@ -24,8 +17,7 @@ function findUserById($users, $id)
     return ['username' => 'ไม่ระบุ'];
 }
 
-function findCategoryById($categories, $id)
-{
+function findCategoryById($categories, $id) {
     foreach ($categories as $category) {
         if ($category['id'] == $id) {
             return $category;
@@ -34,33 +26,16 @@ function findCategoryById($categories, $id)
     return ['name' => 'ไม่ระบุ'];
 }
 
-// ค้นหากระทู้
-$thread = findThreadById($allData['threads'] ?? [], $threadId);
 if (!$thread) {
     echo "<div class='alert alert-error'>ไม่พบกระทู้นี้</div>";
     return;
 }
-
-// คำนวณจำนวนไลค์
-$likeCount = count(array_filter($allData['likes'] ?? [], fn($l) => $l['thread_id'] == $threadId));
-
-// ตรวจสอบว่าไลค์แล้วหรือไม่
-$hasLiked = false;
-foreach ($allData['likes'] ?? [] as $like) {
-    if ($like['thread_id'] == $threadId && $like['user_id'] == $currentUser['id']) {
-        $hasLiked = true;
-        break;
-    }
-}
-
-// ความคิดเห็น
-$threadComments = array_filter($allData['comments'] ?? [], fn($c) => $c['thread_id'] == $threadId);
 ?>
 <div class="card bg-base-100 shadow-xl p-4">
     <h2 class="card-title"><?php echo htmlspecialchars($thread['title']); ?></h2>
     <p class="text-sm mb-4">
-        โดย: <?php echo htmlspecialchars(findUserById($allData['users'] ?? [], $thread['author_id'])['username']); ?> |
-        หมวดหมู่: <?php echo htmlspecialchars(findCategoryById($allData['categories'] ?? [], $thread['category_id'])['name']); ?> |
+        โดย: <?php echo htmlspecialchars(findUserById($allData['users'], $thread['author_id'])['username']); ?> | 
+        หมวดหมู่: <?php echo htmlspecialchars(findCategoryById($allData['categories'], $thread['category_id'])['name']); ?> | 
         วันที่: <?php echo htmlspecialchars($thread['created_at']); ?>
     </p>
     <p class="mb-4"><?php echo nl2br(htmlspecialchars($thread['content'])); ?></p>
@@ -81,7 +56,7 @@ $threadComments = array_filter($allData['comments'] ?? [], fn($c) => $c['thread_
             <div class="card bg-base-200 p-2 mb-2">
                 <p><?php echo nl2br(htmlspecialchars($comment['content'])); ?></p>
                 <p class="text-sm">
-                    โดย: <?php echo htmlspecialchars(findUserById($allData['users'] ?? [], $comment['author_id'])['username']); ?> |
+                    โดย: <?php echo htmlspecialchars(findUserById($allData['users'], $comment['author_id'])['username']); ?> | 
                     วันที่: <?php echo htmlspecialchars($comment['created_at']); ?>
                 </p>
                 <?php if ($currentUser['role'] !== 'guest'): ?>
