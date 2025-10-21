@@ -1,11 +1,11 @@
 <?php
 
-require 'pdo.php'; // ไฟล์เชื่อมต่อฐานข้อมูล
+require 'models/pdo.php'; // ไฟล์เชื่อมต่อฐานข้อมูล
 
 class DataLayer
 {
     private $conn;
-    private $dbName = 'uc-db';
+    private $dbName = 'ucdb';
 
     public function __construct($conn)
     {

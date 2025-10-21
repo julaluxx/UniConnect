@@ -1,17 +1,15 @@
 <?php
-
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "uc-db";
+$dbname = "ucdb";
 
 try {
     $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    // ตั้งค่าให้ใช้ UTF-8 เพื่อรองรับภาษาไทย
-    $conn->exec("SET NAMES 'utf8'");
+    $conn->exec("SET NAMES 'utf8mb4'");
 } catch (PDOException $e) {
-    die("การเชื่อมต่อฐานข้อมูลล้มเหลว: " . $e->getMessage());
+    error_log("การเชื่อมต่อฐานข้อมูลล้มเหลว: " . $e->getMessage());
+    die("เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล กรุณาตรวจสอบการกำหนดค่าเซิร์ฟเวอร์");
 }
-
 ?>
