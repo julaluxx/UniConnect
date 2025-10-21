@@ -118,9 +118,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
 }
 
 // กรองกระทู้ตามคำค้นหา
-$filteredThreads = $searchQuery ? $dataLayer->searchThreads($searchQuery) : $threads;
-if (isset($filteredThreads['error'])) {
-    $filteredThreads = [];
+$filteredThreads = $threads; // ค่าเริ่มต้นเป็น $threads ซึ่งเป็น array
+if ($searchQuery) {
+    $searchResults = $dataLayer->searchThreads($searchQuery);
+    if (isset($searchResults['error']) || !is_array($searchResults)) {
+        $filteredThreads = []; // ตั้งเป็น array ว่างถ้ามีข้อผิดพลาดหรือผลลัพธ์ไม่ใช่ array
+    } else {
+        $filteredThreads = $searchResults;
+    }
 }
 
 // การกระทำเกี่ยวกับกระทู้
@@ -174,6 +179,25 @@ if ($threadId && $currentUser['role'] !== 'guest') {
             exit;
         } catch (PDOException $e) {
             echo "<div class='alert alert-error'>เกิดข้อผิดพลาด: " . htmlspecialchars($e->getMessage()) . "</div>";
+        }
+    }
+
+    // การรายงานคอมเมนต์
+    if ($action === 'report-comment' && $commentId && $currentUser['role'] !== 'guest') {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            try {
+                $stmt = $conn->prepare("SELECT COUNT(*) FROM reports WHERE comment_id = ? AND reported_by = ?");
+                $stmt->execute([$commentId, $currentUser['id']]);
+                if ($stmt->fetchColumn() == 0) {
+                    $description = trim($_POST['description'] ?? '');
+                    $stmt = $conn->prepare("INSERT INTO reports (comment_id, reported_by, description, created_at) VALUES (?, ?, ?, NOW())");
+                    $stmt->execute([$commentId, $currentUser['id'], $description]);
+                }
+                header("Location: ?thread=$threadId");
+                exit;
+            } catch (PDOException $e) {
+                echo "<div class='alert alert-error'>เกิดข้อผิดพลาด: " . htmlspecialchars($e->getMessage()) . "</div>";
+            }
         }
     }
 
@@ -283,6 +307,7 @@ if ($currentUser['role'] === 'admin') {
 ?>
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -290,6 +315,7 @@ if ($currentUser['role'] === 'admin') {
     <script src="https://cdn.tailwindcss.com"></script>
     <title>UniConnect</title>
 </head>
+
 <body class="bg-gray-100 min-h-screen">
     <?php include 'views/Navbar.php'; ?>
     <div class="container mx-auto mt-6 p-4">
@@ -302,7 +328,9 @@ if ($currentUser['role'] === 'admin') {
             </div>
             <div id="dialogue" class="col-span-2">
                 <?php
-                if ($action === 'edit-profile' && $currentUser['role'] !== 'guest') {
+                if ($threadId) {
+                    include 'views/ThreadDetail.php';
+                } elseif ($action === 'edit-profile' && $currentUser['role'] !== 'guest') {
                     include 'views/EditProfile.php';
                 } elseif ($action === 'login' && $currentUser['role'] === 'guest') {
                     include 'views/Login.php';
@@ -316,12 +344,16 @@ if ($currentUser['role'] === 'admin') {
                     include 'views/UserManage.php';
                 } elseif ($action === 'report' && $threadId && $currentUser['role'] !== 'guest') {
                     include 'views/Report.php';
+                } elseif ($action === 'report-comment' && $commentId && $currentUser['role'] !== 'guest') {
+                    include 'views/ReportComment.php';
+                } else {
+                    include 'views/ThreadList.php';
                 }
-                include 'views/ThreadList.php';
                 ?>
             </div>
         </main>
     </div>
     <?php include 'views/Footer.php'; ?>
 </body>
+
 </html>

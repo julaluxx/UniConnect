@@ -1,5 +1,4 @@
 <?php
-// ตรวจสอบว่า $currentUser มีอยู่หรือไม่
 $currentUser = $currentUser ?? [
     'username' => 'Guest',
     'role' => 'guest'
@@ -8,11 +7,6 @@ $currentUser = $currentUser ?? [
 <nav class="navbar bg-base-100 shadow-lg">
     <div class="navbar-start">
         <a href="index.php" class="btn btn-ghost text-xl">UniConnect</a>
-    </div>
-    <div class="navbar-center">
-        <form action="index.php" method="GET" class="form-control">
-            <input type="text" name="q" placeholder="ค้นหากระทู้..." class="input input-bordered w-64" value="<?php echo htmlspecialchars($searchQuery ?? ''); ?>">
-        </form>
     </div>
     <div class="navbar-end">
         <?php if ($currentUser['role'] === 'guest'): ?>

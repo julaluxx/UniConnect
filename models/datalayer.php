@@ -116,6 +116,7 @@ class DataLayer
             'description' => htmlspecialchars($r['description'] ?? ''),
             'reported_by' => (int)($r['reported_by'] ?? 0),
             'thread_id' => (int)($r['thread_id'] ?? null),
+            'comment_id' => (int)($r['comment_id'] ?? null),
             'status' => $r['status'] ?? 'pending',
             'created_at' => $r['created_at'] ?? null,
             'updated_at' => $r['updated_at'] ?? null,
@@ -141,4 +142,3 @@ class DataLayer
         }
     }
 }
-?>
