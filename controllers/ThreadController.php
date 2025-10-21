@@ -12,13 +12,24 @@ class ThreadController {
 
     public function listThreads($searchQuery) {
         $data = [];
-        $data['allData'] = $this->dataLayer->getAllTablesData();
-        if (isset($data['allData']['error'])) {
-            $data['error'] = $data['allData']['error'];
+        $data['threads'] = $this->dataLayer->getThreads();
+        if (isset($data['threads']['error'])) {
+            $data['error'] = $data['threads']['error'];
             $data['filteredThreads'] = [];
             return $data;
         }
-        $data['threads'] = $data['allData']['threads'] ?? [];
+        $data['users'] = $this->dataLayer->getUsers();
+        if (isset($data['users']['error'])) {
+            $data['error'] = $data['users']['error'];
+            $data['filteredThreads'] = [];
+            return $data;
+        }
+        $data['categories'] = $this->dataLayer->getCategories();
+        if (isset($data['categories']['error'])) {
+            $data['error'] = $data['categories']['error'];
+            $data['filteredThreads'] = [];
+            return $data;
+        }
         $data['filteredThreads'] = $searchQuery ? $this->dataLayer->searchThreads($searchQuery) : $data['threads'];
         if (isset($data['filteredThreads']['error']) || !is_array($data['filteredThreads'])) {
             $data['filteredThreads'] = [];
@@ -28,31 +39,40 @@ class ThreadController {
 
     public function threadDetail($threadId, $currentUser) {
         $data = [];
-        $data['allData'] = $this->dataLayer->getAllTablesData();
-        if (isset($data['allData']['error'])) {
-            $data['error'] = $data['allData']['error'];
+        $data['thread'] = $this->dataLayer->getThreadById($threadId);
+        if (isset($data['thread']['error']) || !$data['thread']) {
+            $data['error'] = isset($data['thread']['error']) ? $data['thread']['error'] : 'ไม่พบกระทู้นี้';
             return $data;
         }
         $data['threadId'] = $threadId;
-        $data['thread'] = null;
-        foreach ($data['allData']['threads'] ?? [] as $thread) {
-            if ($thread['id'] == $threadId) {
-                $data['thread'] = $thread;
-                break;
-            }
+        $data['users'] = $this->dataLayer->getUsers();
+        if (isset($data['users']['error'])) {
+            $data['error'] = $data['users']['error'];
+            return $data;
         }
-        if (!$data['thread']) {
-            $data['error'] = 'ไม่พบกระทู้นี้';
+        $data['categories'] = $this->dataLayer->getCategories();
+        if (isset($data['categories']['error'])) {
+            $data['error'] = $data['categories']['error'];
+            return $data;
         }
-        $data['likeCount'] = count(array_filter($data['allData']['likes'] ?? [], fn($l) => $l['thread_id'] == $threadId));
+        $data['threadComments'] = $this->dataLayer->getCommentsByThreadId($threadId);
+        if (isset($data['threadComments']['error'])) {
+            $data['error'] = $data['threadComments']['error'];
+            return $data;
+        }
+        $data['likes'] = $this->dataLayer->getLikesByThreadId($threadId);
+        if (isset($data['likes']['error'])) {
+            $data['error'] = $data['likes']['error'];
+            return $data;
+        }
+        $data['likeCount'] = count($data['likes']);
         $data['hasLiked'] = false;
-        foreach ($data['allData']['likes'] ?? [] as $like) {
+        foreach ($data['likes'] as $like) {
             if ($like['thread_id'] == $threadId && $like['user_id'] == $currentUser['id']) {
                 $data['hasLiked'] = true;
                 break;
             }
         }
-        $data['threadComments'] = array_filter($data['allData']['comments'] ?? [], fn($c) => $c['thread_id'] == $threadId);
         return $data;
     }
 
@@ -70,7 +90,7 @@ class ThreadController {
                 $data['threadError'] = 'เกิดข้อผิดพลาด: ' . $e->getMessage();
             }
         }
-        $data['allData'] = $this->dataLayer->getAllTablesData();
+        $data['categories'] = $this->dataLayer->getCategories();
         return $data;
     }
 
@@ -138,9 +158,21 @@ class ThreadController {
 
     public function manageThreads($currentUser) {
         $data = [];
-        $data['allData'] = $this->dataLayer->getAllTablesData();
-        if (isset($data['allData']['error'])) {
-            $data['error'] = $data['allData']['error'];
+        $data['threads'] = $this->dataLayer->getThreads();
+        if (isset($data['threads']['error'])) {
+            $data['error'] = $data['threads']['error'];
+        }
+        $data['users'] = $this->dataLayer->getUsers();
+        if (isset($data['users']['error'])) {
+            $data['error'] = $data['users']['error'];
+        }
+        $data['categories'] = $this->dataLayer->getCategories();
+        if (isset($data['categories']['error'])) {
+            $data['error'] = $data['categories']['error'];
+        }
+        $data['reports'] = $this->dataLayer->getReports();
+        if (isset($data['reports']['error'])) {
+            $data['error'] = $data['reports']['error'];
         }
         return $data;
     }

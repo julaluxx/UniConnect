@@ -3,16 +3,18 @@ require_once 'models/datalayer.php';
 
 class UserController {
     private $conn;
+    private $dataLayer;
 
     public function __construct($conn) {
         $this->conn = $conn;
+        $this->dataLayer = new DataLayer($conn);
     }
 
     public function manageUsers() {
-        $dataLayer = new DataLayer($this->conn);
-        $data = ['allData' => $dataLayer->getAllTablesData()];
-        if (isset($data['allData']['error'])) {
-            $data['error'] = $data['allData']['error'];
+        $data = [];
+        $data['users'] = $this->dataLayer->getUsers();
+        if (isset($data['users']['error'])) {
+            $data['error'] = $data['users']['error'];
         }
         return $data;
     }

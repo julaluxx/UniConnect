@@ -2,12 +2,12 @@
 $currentUser = $data['currentUser'] ?? ['role' => 'guest', 'id' => 0];
 $threadId = $data['threadId'] ?? null;
 $thread = $data['thread'] ?? null;
-$allData = $data['allData'] ?? ['threads' => [], 'users' => [], 'categories' => [], 'comments' => [], 'likes' => []];
+$users = $data['users'] ?? [];
+$categories = $data['categories'] ?? [];
+$threadComments = $data['threadComments'] ?? [];
 $likeCount = $data['likeCount'] ?? 0;
 $hasLiked = $data['hasLiked'] ?? false;
-$threadComments = $data['threadComments'] ?? [];
 
-// ฟังก์ชันช่วยค้นหาข้อมูลผู้ใช้และหมวดหมู่
 function findUserById($users, $id) {
     foreach ($users as $user) {
         if ($user['id'] == $id) {
@@ -34,8 +34,8 @@ if (!$thread) {
 <div class="card bg-base-100 shadow-xl p-4">
     <h2 class="card-title"><?php echo htmlspecialchars($thread['title']); ?></h2>
     <p class="text-sm mb-4">
-        โดย: <?php echo htmlspecialchars(findUserById($allData['users'], $thread['author_id'])['username']); ?> | 
-        หมวดหมู่: <?php echo htmlspecialchars(findCategoryById($allData['categories'], $thread['category_id'])['name']); ?> | 
+        โดย: <?php echo htmlspecialchars(findUserById($users, $thread['author_id'])['username']); ?> | 
+        หมวดหมู่: <?php echo htmlspecialchars(findCategoryById($categories, $thread['category_id'])['name']); ?> | 
         วันที่: <?php echo htmlspecialchars($thread['created_at']); ?>
     </p>
     <p class="mb-4"><?php echo nl2br(htmlspecialchars($thread['content'])); ?></p>
@@ -56,7 +56,7 @@ if (!$thread) {
             <div class="card bg-base-200 p-2 mb-2">
                 <p><?php echo nl2br(htmlspecialchars($comment['content'])); ?></p>
                 <p class="text-sm">
-                    โดย: <?php echo htmlspecialchars(findUserById($allData['users'], $comment['author_id'])['username']); ?> | 
+                    โดย: <?php echo htmlspecialchars(findUserById($users, $comment['author_id'])['username']); ?> | 
                     วันที่: <?php echo htmlspecialchars($comment['created_at']); ?>
                 </p>
                 <?php if ($currentUser['role'] !== 'guest'): ?>

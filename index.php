@@ -5,18 +5,23 @@ error_reporting(E_ALL);
 
 session_start();
 require_once 'models/pdo.php';
+require_once 'models/datalayer.php';
 require_once 'controllers/AuthController.php';
 require_once 'controllers/ThreadController.php';
 require_once 'controllers/UserController.php';
 
 // สร้างอ็อบเจ็กต์ Controller
+$dataLayer = new DataLayer($conn);
 $authController = new AuthController($conn);
 $threadController = new ThreadController($conn);
 $userController = new UserController($conn);
 
-$hashedPassword = password_hash('dummy-uc', PASSWORD_DEFAULT);
-$stmt = $conn->prepare("UPDATE users SET password = ? WHERE email = ?");
-$stmt->execute([$hashedPassword, 'dummy.uc@email.com']);
+// GET parameters
+$action = $_GET['action'] ?? '';
+$threadId = $_GET['thread'] ?? null;
+$commentId = $_GET['comment'] ?? null;
+$userIdParam = $_GET['user'] ?? null;
+$searchQuery = $_GET['q'] ?? '';
 
 // จัดการผู้ใช้ปัจจุบัน
 $currentUser = [
@@ -27,10 +32,9 @@ $currentUser = [
     'bio' => null,
 ];
 if (isset($_SESSION['user_id'])) {
-    $dataLayer = new DataLayer($conn);
-    $allData = $dataLayer->getAllTablesData();
-    if (!isset($allData['error'])) {
-        foreach ($allData['users'] ?? [] as $user) {
+    $users = $dataLayer->getUsers();
+    if (!isset($users['error'])) {
+        foreach ($users as $user) {
             if ($user['id'] == $_SESSION['user_id']) {
                 $currentUser = $user;
                 break;
@@ -39,20 +43,14 @@ if (isset($_SESSION['user_id'])) {
     }
 }
 
-// GET parameters
-$action = $_GET['action'] ?? '';
-$threadId = $_GET['thread'] ?? null;
-$commentId = $_GET['comment'] ?? null;
-$userIdParam = $_GET['user'] ?? null;
-$searchQuery = $_GET['q'] ?? '';
-
-// จัดการ actions
+// เตรียมข้อมูลสำหรับ views
 $data = [
     'currentUser' => $currentUser,
     'searchQuery' => $searchQuery,
     'action' => $action,
     'threadId' => $threadId,
-    'allData' => []
+    'commentId' => $commentId,
+    'error' => null,
 ];
 
 // ล็อกอิน
@@ -130,11 +128,11 @@ if ($currentUser['role'] === 'admin') {
             $_POST['role'] ?? 'user'
         );
     }
-    if ($action === 'manage-thread') {
-        $data = array_merge($data, $threadController->manageThreads($currentUser));
-    }
     if ($action === 'delete-thread' && $threadId) {
         $threadController->deleteThread($threadId, $currentUser);
+    }
+    if ($action === 'manage-thread') {
+        $data = array_merge($data, $threadController->manageThreads($currentUser));
     }
     if ($action === 'manage-user') {
         $data = array_merge($data, $userController->manageUsers());
@@ -170,7 +168,7 @@ if ($threadId) {
             </div>
             <div id="dialogue" class="col-span-2">
                 <?php
-                if (isset($data['error'])) {
+                if ($data['error']) {
                     echo "<div class='alert alert-error'>" . htmlspecialchars($data['error']) . "</div>";
                 }
                 if ($threadId) {

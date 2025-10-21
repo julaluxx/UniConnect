@@ -1,5 +1,9 @@
 <?php
-$threadId = $threadId ?? null;
+$threadId = $_GET['thread'] ?? null;
+if (!$threadId) {
+    echo "<div class='alert alert-error'>ไม่พบข้อมูลกระทู้</div>";
+    return;
+}
 ?>
 <div class="card bg-base-100 shadow-xl p-4 mb-4">
     <h2 class="card-title">รายงานกระทู้</h2>

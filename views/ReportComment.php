@@ -1,6 +1,10 @@
 <?php
 $commentId = $_GET['comment'] ?? null;
-$threadId = $threadId ?? null;
+$threadId = $_GET['thread'] ?? null;
+if (!$commentId || !$threadId) {
+    echo "<div class='alert alert-error'>ไม่พบข้อมูลคอมเมนต์หรือกระทู้</div>";
+    return;
+}
 ?>
 <div class="card bg-base-100 shadow-xl p-4 mb-4">
     <h2 class="card-title">รายงานคอมเมนต์</h2>

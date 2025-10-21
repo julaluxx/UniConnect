@@ -12,12 +12,11 @@ class AuthController {
 
     public function login($email, $password) {
         $data = ['loginError' => ''];
-        $allData = $this->dataLayer->getAllTablesData();
-        if (isset($allData['error'])) {
-            $data['loginError'] = $allData['error'];
+        $users = $this->dataLayer->getUsers();
+        if (isset($users['error'])) {
+            $data['loginError'] = $users['error'];
             return $data;
         }
-        $users = $allData['users'] ?? [];
         $foundUser = null;
         foreach ($users as $user) {
             if ($user['email'] === $email) {
