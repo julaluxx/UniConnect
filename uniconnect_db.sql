@@ -1,6 +1,7 @@
 -- uniconnect_db.sql
 
 CREATE DATABASE IF NOT EXISTS uniconnect_db;
+USE uniconnect_db;
 
 -- ตาราง users
 CREATE TABLE IF NOT EXISTS users (
