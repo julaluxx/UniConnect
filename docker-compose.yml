@@ -1,12 +1,11 @@
-# docker-compose.yml
-
 services:
   xampp:
     image: tomsik68/xampp:latest
-    container_name: uc-server
+    container_name: uc-server-2
     privileged: true
     ports:
-      - "8080:80"
+      - "8088:80"
     volumes:
-      - /workspaces/UniConnect:/opt/lampp/htdocs/UniConnect:Z
+      # - /workspaces/UniConn:/opt/lampp/htdocs/uniconn:Z
+      - ~/Documents/uniconn:/opt/lampp/htdocs/uniconn:Z
     restart: unless-stopped

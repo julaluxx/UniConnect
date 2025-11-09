@@ -1,316 +1,219 @@
 <?php
-require 'data_layer.php';
-$dataLayer = new DataLayer($conn);
-$allData = $dataLayer->getAllTablesData();
+session_start();
+include 'config.php';
 
-$users = $allData['users'];
-$categories = $allData['categories'];
-$threads = $allData['threads'];
-$comments = $allData['comments'];
-$likes = $allData['likes'];
-$reports = $allData['reports'];
+// ดึงหมวดหมู่
+$categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
 
-// GET parameters
-$action = $_GET['action'] ?? '';
-$threadId = $_GET['thread'] ?? null;
-$userIdParam = $_GET['user'] ?? null;
-
-// ===== HANDLE CURRENT USER =====
-$currentUser = [
-    'id' => 0,
-    'username' => 'Guest',
-    'email' => '',
-    'role' => 'guest',
-    'profile_image' => null,
-];
+// ดึงข้อมูลผู้ใช้
+$user = null;
 if (isset($_SESSION['user_id'])) {
-    foreach ($users as $user) {
-        if ($user['id'] == $_SESSION['user_id']) {
-            $currentUser = $user;
-            break;
-        }
-    }
+    $stmt = $pdo->prepare("SELECT username, email, profile_pic FROM users WHERE id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+    $user = $stmt->fetch();
 }
 
-// ===== LOGOUT =====
-if ($action === 'logout') {
-    session_destroy();
-    header("Location: index.php");
-    exit;
+// ค้นหา / กรองหมวดหมู่
+$search = $_GET['search'] ?? '';
+$category_filter = $_GET['category'] ?? '';
+
+$query = "
+    SELECT p.*, u.username, c.name AS category 
+    FROM posts p 
+    JOIN users u ON p.user_id = u.id 
+    JOIN categories c ON p.category_id = c.id 
+    WHERE p.hidden = FALSE
+";
+$params = [];
+if ($search) {
+    $query .= " AND (p.title LIKE ? OR p.content LIKE ?)";
+    $params[] = "%$search%";
+    $params[] = "%$search%";
 }
-
-// ===== LOGIN =====
-$loginError = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
-    $email = $_POST['email'] ?? '';
-    $password = $_POST['password'] ?? '';
-    $foundUser = null;
-    foreach ($users as $user) {
-        if ($user['email'] === $email) {
-            $foundUser = $user;
-            break;
-        }
-    }
-    if ($foundUser && password_verify($password, $foundUser['password'])) {
-        $_SESSION['user_id'] = $foundUser['id'];
-        $_SESSION['username'] = $foundUser['username'] ?? '';
-        $_SESSION['role'] = $foundUser['role'] ?? '';
-        header("Location: index.php");
-        exit;
-    } else {
-        $loginError = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
-    }
+if ($category_filter) {
+    $query .= " AND c.id = ?";
+    $params[] = $category_filter;
 }
-
-// ===== REGISTER =====
-$registerError = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
-    $username = trim($_POST['username'] ?? '');
-    $email = trim($_POST['email'] ?? '');
-    $password = $_POST['password'] ?? '';
-    $confirmPassword = $_POST['confirm_password'] ?? '';
-
-    // ตรวจสอบข้อมูลว่าง
-    if (!$username || !$email || !$password || !$confirmPassword) {
-        $registerError = 'กรุณากรอกข้อมูลให้ครบทุกช่อง';
-    }
-    // ตรวจสอบรูปแบบอีเมล
-    elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $registerError = 'รูปแบบอีเมลไม่ถูกต้อง';
-    }
-    // ตรวจสอบรหัสผ่านตรงกัน
-    elseif ($password !== $confirmPassword) {
-        $registerError = 'รหัสผ่านไม่ตรงกัน';
-    } else {
-        try {
-            // ตรวจสอบว่าอีเมลนี้มีอยู่แล้วหรือยัง
-            $stmt = $conn->prepare("SELECT COUNT(*) FROM users WHERE email = ?");
-            $stmt->execute([$email]);
-            $exists = $stmt->fetchColumn();
-
-            if ($exists) {
-                $registerError = 'อีเมลนี้ถูกใช้แล้ว';
-            } else {
-                // แฮ็ชรหัสผ่าน
-                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-
-                // เพิ่มข้อมูลลงฐานข้อมูล (พร้อมเวลาและรูปโปรไฟล์เริ่มต้น)
-                $stmt = $conn->prepare("INSERT INTO users (username, email, password, role, created_at) VALUES (?, ?, ?, 'user', NOW())");
-                $stmt->execute([$username, $email, $hashedPassword]);
-
-                // ล็อกอินอัตโนมัติหลังสมัคร
-                $newUserId = $conn->lastInsertId();
-                $_SESSION['user_id'] = $newUserId;
-                $_SESSION['username'] = $username;
-                $_SESSION['role'] = 'user';
-
-                // กลับไปหน้าแรก
-                header("Location: index.php");
-                exit;
-            }
-        } catch (PDOException $e) {
-            $registerError = 'เกิดข้อผิดพลาดระหว่างการสมัครสมาชิก กรุณาลองใหม่อีกครั้ง';
-        }
-    }
-}
-
-// GET parameters
-$action = $_GET['action'] ?? '';
-$threadId = $_GET['thread'] ?? null;
-$userIdParam = $_GET['user'] ?? null;
-$searchQuery = $_GET['q'] ?? ''; // เพิ่มตัวแปรสำหรับคำค้นหา
-
-// กรองกระทู้ตามคำค้นหา
-$filteredThreads = $threads; // เริ่มต้นด้วยกระทู้ทั้งหมด
-if ($searchQuery) {
-    $filteredThreads = array_filter($threads, function ($thread) use ($searchQuery) {
-        // ค้นหาคำใน title หรือ content ของกระทู้ (case-insensitive)
-        return stripos($thread['title'], $searchQuery) !== false ||
-            stripos($thread['content'], $searchQuery) !== false;
-    });
-}
-
-// ===== THREAD ACTIONS =====
-if ($threadId && $currentUser['role'] !== 'guest') {
-
-    // Like toggle
-    if ($action === 'like-toggle') {
-        $stmt = $conn->prepare("SELECT COUNT(*) FROM likes WHERE thread_id=? AND user_id=?");
-        $stmt->execute([$threadId, $currentUser['id']]);
-        $hasLiked = $stmt->fetchColumn() > 0;
-        if ($hasLiked) {
-            $stmt = $conn->prepare("DELETE FROM likes WHERE thread_id=? AND user_id=?");
-            $stmt->execute([$threadId, $currentUser['id']]);
-        } else {
-            $stmt = $conn->prepare("INSERT INTO likes (thread_id, user_id, created_at) VALUES (?, ?, NOW())");
-            $stmt->execute([$threadId, $currentUser['id']]);
-        }
-        header("Location: ?thread=$threadId");
-        exit;
-    }
-
-    // Report
-    if ($action === 'confirm-report' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-        $stmt = $conn->prepare("SELECT COUNT(*) FROM reports WHERE thread_id=? AND reported_by=?");
-        $stmt->execute([$threadId, $currentUser['id']]);
-        if ($stmt->fetchColumn() == 0) {
-            $description = trim($_POST['description'] ?? '');
-            $stmt = $conn->prepare("INSERT INTO reports (thread_id, reported_by, description, created_at) VALUES (?, ?, ?, NOW())");
-            $stmt->execute([$threadId, $currentUser['id'], $description]);
-        }
-        header("Location: ?thread=$threadId");
-        exit;
-    }
-
-    // Comment
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment'])) {
-        $content = trim($_POST['content'] ?? '');
-        if ($content) {
-            $stmt = $conn->prepare("INSERT INTO comments (thread_id, author_id, content, created_at) VALUES (?, ?, ?, NOW())");
-            $stmt->execute([$threadId, $currentUser['id'], $content]);
-        }
-        header("Location: ?thread=$threadId");
-        exit;
-    }
-
-    // Delete thread (Admin)
-    if ($action === 'delete-thread' && $currentUser['role'] === 'admin') {
-        $stmt = $conn->prepare("DELETE FROM threads WHERE id=?");
-        $stmt->execute([$threadId]);
-        header("Location: ?action=manage-thread");
-        exit;
-    }
-}
-
-// ===== CREATE NEW THREAD =====
-if ($action === 'create-new-thread' && $currentUser['role'] !== 'guest') {
-    $threadError = '';
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_thread'])) {
-        $title = trim($_POST['title'] ?? '');
-        $categoryId = $_POST['category_id'] ?? '';
-        $content = trim($_POST['content'] ?? '');
-        if (!$title || !$categoryId || !$content) {
-            $threadError = 'กรุณากรอกข้อมูลให้ครบทุกช่อง';
-        } else {
-            $stmt = $conn->prepare("INSERT INTO threads (title, category_id, author_id, content, created_at) VALUES (?, ?, ?, ?, NOW())");
-            $stmt->execute([$title, $categoryId, $currentUser['id'], $content]);
-            header("Location: index.php");
-            exit;
-        }
-    }
-}
-
-// ===== EDIT PROFILE =====
-if ($action === 'edit-profile' && $currentUser['role'] !== 'guest') {
-    $editError = '';
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_profile'])) {
-        $username = trim($_POST['username'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $bio = trim($_POST['bio'] ?? '');
-        $password = trim($_POST['password'] ?? '');
-        $confirmPassword = trim($_POST['confirm_password'] ?? '');
-        if (!$username || !$email) {
-            $editError = 'กรุณากรอกชื่อและอีเมลให้ครบ';
-        } elseif ($password && $password !== $confirmPassword) {
-            $editError = 'รหัสผ่านไม่ตรงกัน';
-        } else {
-            $params = [$username, $email, $bio, $currentUser['id']];
-            $sql = "UPDATE users SET username=?, email=?, bio=? WHERE id=?";
-            if ($password) {
-                $hashed = password_hash($password, PASSWORD_DEFAULT);
-                $sql = "UPDATE users SET username=?, email=?, bio=?, password=? WHERE id=?";
-                $params = [$username, $email, $bio, $hashed, $currentUser['id']];
-            }
-            $stmt = $conn->prepare($sql);
-            $stmt->execute($params);
-            $_SESSION['username'] = $username;
-            $currentUser['username'] = $username;
-            $currentUser['email'] = $email;
-            $currentUser['bio'] = $bio;
-            header("Location: index.php");
-            exit;
-        }
-    }
-}
-
-// ===== ADMIN USER ACTIONS =====
-if ($currentUser['role'] === 'admin') {
-
-    // Delete user
-    if ($action === 'delete-user' && $userIdParam) {
-        $stmt = $conn->prepare("DELETE FROM users WHERE id=?");
-        $stmt->execute([$userIdParam]);
-        header("Location: ?action=manage-user");
-        exit;
-    }
-
-    // Edit user
-    if ($action === 'edit-user' && $userIdParam && $_SERVER['REQUEST_METHOD'] === 'POST') {
-        $username = trim($_POST['username'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $role = trim($_POST['role'] ?? 'user');
-        if ($username && $email) {
-            $stmt = $conn->prepare("UPDATE users SET username=?, email=?, role=? WHERE id=?");
-            $stmt->execute([$username, $email, $role, $userIdParam]);
-            header("Location: ?action=manage-user");
-            exit;
-        }
-    }
-}
+$query .= " ORDER BY p.pinned DESC, p.created_at DESC LIMIT 30";
+$stmt = $pdo->prepare($query);
+$stmt->execute($params);
+$posts = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th" data-theme="light">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <title>UniConnect</title>
+    <title>UniConnect - หน้าหลัก</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com">
+    </script>
 </head>
 
-<body class="bg-gray-100 min-h-screen">
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100 flex flex-col">
 
-    <?php include 'components/Navbar.php'; ?>
-    <div class="container mx-auto mt-6 p-4">
-        <?php include 'components/TopBar.php'; ?>
-        <main class="grid grid-cols-3 gap-4">
-            <div class="side-bar col-span-1">
-                <?php include 'components/Profile.php'; ?>
-                <?php include 'components/CategoryList.php'; ?>
-                <?php include 'components/Statistic.php'; ?>
+    <!-- Navbar -->
+    <nav class="navbar bg-primary text-primary-content shadow-lg px-6">
+        <div class="flex justify-between items-center w-full max-w-7xl mx-auto">
+            <!-- โลโก้ -->
+            <div class="flex-none">
+                <a href="index.php" class="btn btn-ghost normal-case text-2xl font-bold tracking-wide">UniConnect</a>
             </div>
-            <div id="dialogue" class="col-span-2">
-                <?php
-                if ($action === 'edit-profile' && $currentUser['role'] !== 'guest') {
-                    include 'components/EditProfile.php';
-                } elseif ($action === 'login' && $currentUser['role'] === 'guest') {
-                    include 'components/Login.php';
-                } elseif ($action === 'register' && $currentUser['role'] === 'guest') {
-                    include 'components/Register.php';
-                } elseif ($action === 'create-new-thread' && $currentUser['role'] !== 'guest') {
-                    include 'components/NewThread.php';
-                }
 
-                if ($action === 'manage-thread' && $currentUser['role'] === 'admin') {
-                    include 'components/ThreadManage.php';
-                }
-                if ($action === 'manage-user' && $currentUser['role'] === 'admin') {
-                    include 'components/UserManage.php';
-                }
-
-                // แสดง ThreadList เสมอ
-                if ($action !== 'edit-profile') {
-                    include 'components/ThreadList.php';
-                }
-                ?>
+            <!-- เมนูกลาง -->
+            <div class="flex-1 flex justify-center space-x-2">
+                <a href="index.php" class="btn btn-success hover:bg-primary-focus active">หน้าแรก</a>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <a href="profile.php" class="btn btn-ghost hover:bg-primary-focus">โปรไฟล์</a>
+                    <?php if (in_array($_SESSION['role'], ['moderator', 'admin'])): ?>
+                        <a href="moderate.php" class="btn btn-ghost hover:bg-primary-focus">จัดการกระทู้</a>
+                    <?php endif; ?>
+                    <?php if ($_SESSION['role'] == 'admin'): ?>
+                        <a href="admin.php" class="btn btn-ghost hover:bg-primary-focus">จัดการผู้ใช้</a>
+                    <?php endif; ?>
+                <?php endif; ?>
             </div>
-        </main>
+
+            <!-- ปุ่มเข้าสู่ระบบ -->
+            <div class="flex-none">
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <a href="logout.php" class="btn btn-secondary">ออกจากระบบ</a>
+                <?php else: ?>
+                    <a href="login.php" class="btn btn-secondary">เข้าสู่ระบบ</a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ส่วนค้นหา + ปุ่มสร้างกระทู้ -->
+    <div class="bg-base-200 p-4 flex flex-wrap justify-between items-center gap-4">
+
+        <form action="index.php" method="GET" class="flex-grow flex gap-2">
+            <input type="text" name="search" placeholder="🔍 ค้นหากระทู้..."
+                class="input input-bordered w-full focus:ring focus:ring-primary/30"
+                value="<?php echo htmlspecialchars($search); ?>" />
+            <?php if ($search || $category_filter): ?>
+                <a href="index.php" class="btn btn-outline btn-secondary">ล้างการค้นหา</a>
+            <?php endif; ?>
+        </form>
+
+        <?php if (isset($_SESSION['user_id'])): ?>
+            <a href="post.php" class="btn btn-primary flex items-center gap-2">
+                ✏️ สร้างกระทู้ใหม่
+            </a>
+        <?php endif; ?>
+
     </div>
 
-    <?php include 'components/Footer.php'; ?>
+    <!-- Layout หลัก -->
+    <main class="flex-grow container mx-auto max-w-7xl p-6 flex flex-col md:flex-row gap-6">
+
+        <!-- Sidebar -->
+        <aside class="md:w-1/4 space-y-4">
+
+            <!-- โปรไฟล์ -->
+            <div class="card bg-base-100 shadow-md">
+                <div class="card-body items-center text-center">
+                    <?php if ($user): ?>
+                        <img src="<?php echo $user['profile_pic'] ?? 'assets/default.png'; ?>"
+                            class="w-20 h-20 rounded-full mb-2 border" alt="profile">
+                        <h3 class="font-semibold text-lg"><?php echo htmlspecialchars($user['username']); ?></h3>
+                        <p class="text-sm text-gray-500"><?php echo htmlspecialchars($user['email']); ?></p>
+                    <?php else: ?>
+                        <p>เข้าสู่ระบบเพื่อดูโปรไฟล์ของคุณ</p>
+                        <a href="login.php" class="btn btn-secondary btn-sm mt-2">เข้าสู่ระบบ</a>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- หมวดหมู่ -->
+            <div class="card bg-base-100 shadow-md">
+                <div class="card-body">
+                    <h3 class="font-bold mb-2">📚 หมวดหมู่</h3>
+                    <ul class="menu menu-compact">
+                        <li><a href="index.php"
+                                class="<?php echo $category_filter == '' ? 'active' : ''; ?>">ทั้งหมด</a></li>
+                        <?php foreach ($categories as $cat): ?>
+                            <li>
+                                <a href="index.php?category=<?php echo $cat['id']; ?>"
+                                    class="<?php echo $category_filter == $cat['id'] ? 'active' : ''; ?>">
+                                    <?php echo htmlspecialchars($cat['name']); ?>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- สถิติ (ตกแต่งทีหลังได้) -->
+            <div class="card bg-base-100 shadow-md p-4 text-center text-sm text-gray-600">
+                <p>🌟 ยินดีต้อนรับสู่ UniConnect!</p>
+                <p>โพสต์ทั้งหมด:
+                    <?php echo $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn(); ?>
+                </p>
+                <p>คอมเม้นทั้งหมด:
+                    <?php echo $pdo->query("SELECT COUNT(*) FROM comments")->fetchColumn(); ?>
+                </p>
+            </div>
+
+        </aside>
+
+        <!-- ส่วนกลาง -->
+        <section class="flex-1">
+            <!-- แสดงผลการค้นหา -->
+            <h2 class="text-2xl font-bold mb-4 text-primary">
+                <?php
+                if ($search && $category_filter) {
+                    echo "ผลลัพธ์การค้นหา \"" . htmlspecialchars($search) . "\" ในหมวดหมู่ " . htmlspecialchars($categories[array_search($category_filter, array_column($categories, 'id'))]['name']);
+                } elseif ($search) {
+                    echo "ผลลัพธ์การค้นหา \"" . htmlspecialchars($search) . "\"";
+                } elseif ($category_filter) {
+                    echo "กระทู้หมวดหมู่: " . htmlspecialchars($categories[array_search($category_filter, array_column($categories, 'id'))]['name']);
+                } else {
+                    echo "กระทู้ล่าสุด";
+                }
+                ?>
+            </h2>
+
+            <!-- แสดงกระทู้ทั้งหมด -->
+            <?php if (empty($posts)): ?>
+                <div class="alert alert-info shadow-lg">
+                    <span>ไม่พบกระทู้ที่ตรงกับเงื่อนไข</span>
+                </div>
+            <?php else: ?>
+                <?php foreach ($posts as $post): ?>
+                    <div class="card bg-base-100 shadow-md mb-4 hover:shadow-lg transition">
+                        <div class="card-body">
+                            <h2 class="card-title flex flex-wrap gap-2">
+                                <a href="view_post.php?id=<?php echo $post['id']; ?>" class="link link-primary">
+                                    <?php echo htmlspecialchars($post['title']); ?>
+                                </a>
+                                <?php if ($post['pinned']): ?>
+                                    <span class="badge badge-primary">📌 ปักหมุด</span>
+                                <?php endif; ?>
+                            </h2>
+                            <p class="text-sm text-gray-500">
+                                โดย: <span class="font-medium"><?php echo htmlspecialchars($post['username']); ?></span> |
+                                หมวด: <?php echo htmlspecialchars($post['category']); ?> |
+                                วันที่: <?php echo date('d/m/Y H:i', strtotime($post['created_at'])); ?> |
+                                👁️ <?php echo $post['views']; ?> ครั้ง
+                            </p>
+                            <p class="mt-2 text-gray-700">
+                                <?php echo nl2br(htmlspecialchars(substr($post['content'], 0, 150))); ?>...
+                            </p>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer footer-center bg-base-200 text-base-content py-4 border-t border-base-300">
+        <p class="text-sm text-gray-600">© 2025 UniConnect — สังคมนักศึกษาออนไลน์</p>
+    </footer>
+
 </body>
 
 </html>
