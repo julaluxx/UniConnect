@@ -211,7 +211,7 @@ $posts = $stmt->fetchAll();
 
     <!-- Footer -->
     <footer class="footer footer-center bg-base-200 text-base-content py-4 border-t border-base-300">
-        <p class="text-sm text-gray-600">© 2025 UniConnect — สังคมนักศึกษาออนไลน์</p>
+        <p class="text-sm text-gray-600">© 2025 UniConnect — สังคมนักศึกษาออนไลน์ - ไม่เชื่อ โม้</p>
     </footer>
 
 </body>
