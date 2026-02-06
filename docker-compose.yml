@@ -6,6 +6,6 @@ services:
     ports:
       - "8088:80"
     volumes:
-      - /workspaces/UniConnect:/opt/lampp/htdocs/uniconn:Z
-      # - ~/Documents/uniconn:/opt/lampp/htdocs/uniconn:Z
+      - /workspaces/UniConnect:/opt/lampp/htdocs/uniconn:Z  ## รันบน GithubWorkspace
+      # - ~/Documents/uniconn:/opt/lampp/htdocs/uniconn:Z  ## รันบน Local Machine
     restart: unless-stopped
